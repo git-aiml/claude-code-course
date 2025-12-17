@@ -1,0 +1,574 @@
+{
+  "info": {
+    "_postman_id": "aisoc-copilot-alerts-api",
+    "name": "AI SOC Copilot - Alerts API",
+    "description": "Complete API collection for testing the Alerts REST API endpoints",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "auth": {
+    "type": "basic",
+    "basic": [
+      {
+        "key": "username",
+        "value": "admin",
+        "type": "string"
+      },
+      {
+        "key": "password",
+        "value": "admin123",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "alertId",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Alerts API",
+      "item": [
+        {
+          "name": "Get All Alerts",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response is an array\", function () {",
+                  "    pm.expect(pm.response.json()).to.be.an('array');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/alerts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "alerts"]
+            },
+            "description": "Retrieve all alerts from the system. Returns an array of alert objects."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Alert by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 or 404\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "    pm.test(\"Response has alert object\", function () {",
+                  "        var jsonData = pm.response.json();",
+                  "        pm.expect(jsonData).to.have.property('id');",
+                  "        pm.expect(jsonData).to.have.property('title');",
+                  "    });",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/alerts/{{alertId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "alerts", "{{alertId}}"]
+            },
+            "description": "Retrieve a specific alert by its ID. Returns 404 if not found."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Alert - HIGH Severity",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Response has alert ID\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.collectionVariables.set(\"alertId\", jsonData.id);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Suspicious Login Attempt\",\n  \"description\": \"Multiple failed login attempts detected from unknown IP address\",\n  \"severity\": \"HIGH\",\n  \"status\": \"NEW\",\n  \"sourceIp\": \"192.168.1.100\",\n  \"destinationIp\": \"10.0.0.50\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/alerts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "alerts"]
+            },
+            "description": "Create a new HIGH severity alert. Returns 201 on success with the created alert object."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Alert - CRITICAL Severity",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Malware Detected\",\n  \"description\": \"Trojan horse detected in downloaded executable file\",\n  \"severity\": \"CRITICAL\",\n  \"status\": \"NEW\",\n  \"sourceIp\": \"185.220.101.50\",\n  \"destinationIp\": \"10.0.0.100\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/alerts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "alerts"]
+            },
+            "description": "Create a new CRITICAL severity alert for malware detection."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Alert - MEDIUM Severity",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Port Scan Detected\",\n  \"description\": \"Systematic port scanning activity from external source\",\n  \"severity\": \"MEDIUM\",\n  \"status\": \"NEW\",\n  \"sourceIp\": \"203.0.113.42\",\n  \"destinationIp\": \"10.0.0.51\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/alerts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "alerts"]
+            },
+            "description": "Create a new MEDIUM severity alert for port scanning."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Alert - Minimal Required Fields",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Test Alert with Minimal Fields\",\n  \"severity\": \"LOW\",\n  \"status\": \"NEW\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/alerts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "alerts"]
+            },
+            "description": "Create an alert with only the required fields (title, severity, status)."
+          },
+          "response": []
+        },
+        {
+          "name": "Create Alert - Validation Error",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 400\", function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"\",\n  \"description\": \"This should fail validation\",\n  \"severity\": \"HIGH\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/alerts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "alerts"]
+            },
+            "description": "Test validation error handling - empty title should fail."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Alert to INVESTIGATING",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200 or 404\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Suspicious Login Attempt - Under Investigation\",\n  \"description\": \"Security team is investigating the failed login attempts\",\n  \"severity\": \"HIGH\",\n  \"status\": \"INVESTIGATING\",\n  \"sourceIp\": \"192.168.1.100\",\n  \"destinationIp\": \"10.0.0.50\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/alerts/{{alertId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "alerts", "{{alertId}}"]
+            },
+            "description": "Update an alert's status to INVESTIGATING."
+          },
+          "response": []
+        },
+        {
+          "name": "Update Alert to RESOLVED",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Suspicious Login Attempt - Resolved\",\n  \"description\": \"Investigation complete. Login attempts were from authorized user with forgotten password.\",\n  \"severity\": \"LOW\",\n  \"status\": \"RESOLVED\",\n  \"sourceIp\": \"192.168.1.100\",\n  \"destinationIp\": \"10.0.0.50\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/alerts/{{alertId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "alerts", "{{alertId}}"]
+            },
+            "description": "Update an alert's status to RESOLVED and reduce severity."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Alerts by Severity - HIGH",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"All alerts have HIGH severity\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    jsonData.forEach(function(alert) {",
+                  "        pm.expect(alert.severity).to.equal('HIGH');",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/alerts/severity/HIGH",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "alerts", "severity", "HIGH"]
+            },
+            "description": "Get all alerts with HIGH severity level."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Alerts by Severity - CRITICAL",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/alerts/severity/CRITICAL",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "alerts", "severity", "CRITICAL"]
+            },
+            "description": "Get all alerts with CRITICAL severity level."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Alerts by Severity - MEDIUM",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/alerts/severity/MEDIUM",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "alerts", "severity", "MEDIUM"]
+            },
+            "description": "Get all alerts with MEDIUM severity level."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Alerts by Severity - LOW",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/alerts/severity/LOW",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "alerts", "severity", "LOW"]
+            },
+            "description": "Get all alerts with LOW severity level."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Alerts by Status - NEW",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"All alerts have NEW status\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    jsonData.forEach(function(alert) {",
+                  "        pm.expect(alert.status).to.equal('NEW');",
+                  "    });",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/alerts/status/NEW",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "alerts", "status", "NEW"]
+            },
+            "description": "Get all alerts with NEW status."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Alerts by Status - INVESTIGATING",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/alerts/status/INVESTIGATING",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "alerts", "status", "INVESTIGATING"]
+            },
+            "description": "Get all alerts with INVESTIGATING status."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Alerts by Status - RESOLVED",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/alerts/status/RESOLVED",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "alerts", "status", "RESOLVED"]
+            },
+            "description": "Get all alerts with RESOLVED status."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Alerts by Status - CLOSED",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/alerts/status/CLOSED",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "alerts", "status", "CLOSED"]
+            },
+            "description": "Get all alerts with CLOSED status."
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Alert",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 204 or 404\", function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([204, 404]);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/alerts/{{alertId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "alerts", "{{alertId}}"]
+            },
+            "description": "Delete an alert by ID. Returns 204 on success, 404 if not found."
+          },
+          "response": []
+        }
+      ],
+      "description": "All endpoints related to Alert management"
+    },
+    {
+      "name": "Actuator Endpoints",
+      "item": [
+        {
+          "name": "Health Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Application is UP\", function () {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.status).to.equal('UP');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actuator/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["actuator", "health"]
+            },
+            "description": "Check the health status of the application and its components (database, disk space, etc.)"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Metrics List",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actuator/metrics",
+              "host": ["{{baseUrl}}"],
+              "path": ["actuator", "metrics"]
+            },
+            "description": "Get a list of available application metrics."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Application Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actuator/info",
+              "host": ["{{baseUrl}}"],
+              "path": ["actuator", "info"]
+            },
+            "description": "Get general information about the application."
+          },
+          "response": []
+        }
+      ],
+      "description": "Spring Boot Actuator endpoints for monitoring and management"
+    }
+  ]
+}
