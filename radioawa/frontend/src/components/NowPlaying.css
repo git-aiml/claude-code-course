@@ -1,0 +1,336 @@
+.now-playing {
+  background: #FFFFFF;
+  border: 2px solid var(--peach);
+  border-radius: 12px;
+  padding: 20px;
+  margin: 20px 0;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 4px 12px rgba(31, 78, 35, 0.1);
+}
+
+.now-playing-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--peach);
+}
+
+.pulse-dot {
+  width: 10px;
+  height: 10px;
+  background: var(--sunset-orange);
+  border-radius: 50%;
+  animation: pulse-dot 2s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.8);
+  }
+}
+
+.now-playing-label {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--deep-orange);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.audio-badge {
+  margin-left: auto;
+  background: linear-gradient(135deg, var(--sunset-orange) 0%, var(--deep-orange) 100%);
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+.badge-text {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  color: #FFFFFF;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.track-display {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+  align-items: flex-start;
+}
+
+.album-artwork {
+  flex-shrink: 0;
+  width: 100px;
+  height: 100px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--peach) 0%, var(--sunset-orange) 100%);
+  box-shadow: 0 4px 12px rgba(56, 162, 157, 0.2);
+}
+
+.artwork-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.artwork-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--peach) 0%, #E8F5E9 100%);
+}
+
+.artwork-icon {
+  width: 70%;
+  height: 70%;
+}
+
+.track-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.track-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--burnt-sienna);
+  margin-bottom: 6px;
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  word-break: break-word;
+}
+
+.track-artist {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--sunset-orange);
+  margin-bottom: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.track-album {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 13px;
+  font-weight: 400;
+  color: #666;
+  font-style: italic;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recently-played {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 2px solid var(--peach);
+  background: linear-gradient(to bottom, rgba(216, 242, 213, 0.1) 0%, transparent 100%);
+  border-radius: 8px;
+  padding: 16px;
+  margin-left: -4px;
+  margin-right: -4px;
+}
+
+.recently-played-header {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--deep-orange);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.history-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--sunset-orange);
+  flex-shrink: 0;
+}
+
+.track-history {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.history-item {
+  font-family: 'Open Sans', sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: #FFFFFF;
+  border-radius: 8px;
+  border: 1px solid #E8F5E9;
+  transition: all 0.2s ease;
+  cursor: default;
+}
+
+.history-item:hover {
+  border-color: var(--sunset-orange);
+  box-shadow: 0 2px 8px rgba(56, 162, 157, 0.15);
+  transform: translateX(2px);
+}
+
+.history-number {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--sunset-orange);
+  min-width: 24px;
+  text-align: center;
+  background: linear-gradient(135deg, var(--peach) 0%, #E8F5E9 100%);
+  border-radius: 6px;
+  padding: 4px 0;
+  flex-shrink: 0;
+}
+
+.history-details {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.history-track-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--burnt-sienna);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+.history-track-artist {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--sunset-orange);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.3;
+}
+
+.now-playing-error {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+  color: var(--coral);
+  text-align: center;
+  padding: 10px;
+}
+
+/* Rating sections */
+.current-track-rating {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--peach);
+  display: flex;
+  justify-content: center;
+}
+
+.history-track-rating {
+  margin-top: 8px;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .now-playing {
+    padding: 16px;
+    margin: 16px 0;
+  }
+
+  .track-display {
+    gap: 12px;
+  }
+
+  .album-artwork {
+    width: 80px;
+    height: 80px;
+  }
+
+  .track-title {
+    font-size: 16px;
+  }
+
+  .track-artist {
+    font-size: 13px;
+  }
+
+  .track-album {
+    font-size: 12px;
+  }
+
+  .history-item {
+    padding: 8px 10px;
+    gap: 10px;
+  }
+
+  .history-number {
+    font-size: 14px;
+    min-width: 20px;
+  }
+
+  .history-track-title {
+    font-size: 13px;
+  }
+
+  .history-track-artist {
+    font-size: 11px;
+  }
+
+  .recently-played {
+    padding: 12px;
+    margin-top: 16px;
+    padding-top: 16px;
+  }
+
+  .recently-played-header {
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+
+  .history-icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  .current-track-rating {
+    margin-top: 12px;
+    padding-top: 12px;
+  }
+
+  .history-track-rating {
+    margin-top: 6px;
+  }
+}

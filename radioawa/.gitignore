@@ -1,0 +1,158 @@
+# ============================================
+# radioawa Project .gitignore
+# ============================================
+
+# Logs and PIDs (from scripts)
+# ============================================
+*.log
+backend.log
+frontend.log
+*.pid
+backend.pid
+frontend.pid
+
+# Claude Code Settings
+# ============================================
+.claude/
+
+# Environment Variables
+# ============================================
+.env
+.env.local
+.env.*.local
+
+# Database
+# ============================================
+postgres_data/
+*.sql
+*.dump
+*.backup
+
+# Maven (Backend)
+# ============================================
+backend/target/
+backend/.mvn/
+backend/mvnw
+backend/mvnw.cmd
+backend/*.jar
+backend/*.war
+
+# Node.js (Frontend)
+# ============================================
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/.vite/
+frontend/.cache/
+frontend/build/
+frontend/coverage/
+*.tsbuildinfo
+
+# npm/yarn/pnpm
+# ============================================
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+package-lock.json.bak
+yarn.lock.bak
+
+# IDE - IntelliJ IDEA
+# ============================================
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# IDE - Visual Studio Code
+# ============================================
+.vscode/
+!.vscode/extensions.json
+*.code-workspace
+
+# IDE - Eclipse
+# ============================================
+.classpath
+.project
+.settings/
+bin/
+
+# IDE - NetBeans
+# ============================================
+nbproject/
+nbbuild/
+nbdist/
+.nb-gradle/
+
+# Editor backups
+# ============================================
+*.swp
+*.swo
+*.swn
+*~
+*.bak
+*.tmp
+*.temp
+
+# OS Files
+# ============================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Build Artifacts
+# ============================================
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Design Assets (large files)
+# ============================================
+RadioCalicoStyle.zip
+
+# Test Coverage
+# ============================================
+coverage/
+*.lcov
+.nyc_output/
+test-results/
+junit.xml
+
+# Temporary Files
+# ============================================
+*.tmp
+*.temp
+*.cache
+.cache/
+
+# Spring Boot
+# ============================================
+*.original
+.springBeans
+.sts4-cache/
+# Note: application.properties contains local DB credentials
+# Use application.properties.example as a template
+
+# Compiled Output
+# ============================================
+/dist
+/tmp
+/out-tsc
+
+# System Files
+# ============================================
+*.log.*
+core
+*.core
+hs_err_pid*

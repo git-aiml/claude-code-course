@@ -1,0 +1,473 @@
+{
+  "info": {
+    "name": "Radioawa API Collection",
+    "description": "Complete API collection for Radioawa - 24/7 Lossless Radio Station\n\nIncludes endpoints for:\n- Health checks\n- Song ratings (thumbs up/down)\n- Rating counts and user vote tracking",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8081",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "{{$randomUUID}}",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "Get Health Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "health"
+              ]
+            },
+            "description": "Check if the backend service is running and healthy."
+          },
+          "response": [
+            {
+              "name": "Success Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/health",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "health"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"status\": \"UP\",\n  \"service\": \"Radioawa Backend\",\n  \"timestamp\": 1734513766000\n}"
+            }
+          ]
+        }
+      ],
+      "description": "Endpoints for checking backend service health and availability."
+    },
+    {
+      "name": "Ratings",
+      "item": [
+        {
+          "name": "Submit Thumbs Up Rating",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"artist\": \"The Beatles\",\n  \"title\": \"Hey Jude\",\n  \"userId\": \"{{userId}}\",\n  \"ratingType\": \"THUMBS_UP\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/ratings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ratings"
+              ]
+            },
+            "description": "Submit a thumbs up rating for a song. Creates the song if it doesn't exist. Idempotent - submitting the same rating multiple times has no effect."
+          },
+          "response": [
+            {
+              "name": "New Rating Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"artist\": \"The Beatles\",\n  \"title\": \"Hey Jude\",\n  \"userId\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"ratingType\": \"THUMBS_UP\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/ratings",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "ratings"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"songId\": 1,\n  \"artist\": \"The Beatles\",\n  \"title\": \"Hey Jude\",\n  \"thumbsUpCount\": 1,\n  \"thumbsDownCount\": 0,\n  \"userRating\": \"THUMBS_UP\",\n  \"message\": \"Rating submitted successfully\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Submit Thumbs Down Rating",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"artist\": \"The Beatles\",\n  \"title\": \"Hey Jude\",\n  \"userId\": \"{{userId}}\",\n  \"ratingType\": \"THUMBS_DOWN\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/ratings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ratings"
+              ]
+            },
+            "description": "Submit a thumbs down rating for a song. If user previously rated thumbs up, this will change their vote."
+          },
+          "response": [
+            {
+              "name": "Vote Changed Success",
+              "originalRequest": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"artist\": \"The Beatles\",\n  \"title\": \"Hey Jude\",\n  \"userId\": \"550e8400-e29b-41d4-a716-446655440000\",\n  \"ratingType\": \"THUMBS_DOWN\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/ratings",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "ratings"
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"songId\": 1,\n  \"artist\": \"The Beatles\",\n  \"title\": \"Hey Jude\",\n  \"thumbsUpCount\": 0,\n  \"thumbsDownCount\": 1,\n  \"userRating\": \"THUMBS_DOWN\",\n  \"message\": \"Rating updated successfully\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Rate Different Song",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"artist\": \"Queen\",\n  \"title\": \"Bohemian Rhapsody\",\n  \"userId\": \"{{userId}}\",\n  \"ratingType\": \"THUMBS_UP\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/ratings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ratings"
+              ]
+            },
+            "description": "Example of rating a different song."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Rating Counts (With User)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/ratings/song?artist=The Beatles&title=Hey Jude&userId={{userId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ratings",
+                "song"
+              ],
+              "query": [
+                {
+                  "key": "artist",
+                  "value": "The Beatles",
+                  "description": "Artist name (required)"
+                },
+                {
+                  "key": "title",
+                  "value": "Hey Jude",
+                  "description": "Song title (required)"
+                },
+                {
+                  "key": "userId",
+                  "value": "{{userId}}",
+                  "description": "User ID to check their rating (optional)"
+                }
+              ]
+            },
+            "description": "Get rating counts for a song including the user's current rating. Returns thumbsUpCount, thumbsDownCount, and userRating (if userId provided)."
+          },
+          "response": [
+            {
+              "name": "Success With User Rating",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/ratings/song?artist=The Beatles&title=Hey Jude&userId=550e8400-e29b-41d4-a716-446655440000",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "ratings",
+                    "song"
+                  ],
+                  "query": [
+                    {
+                      "key": "artist",
+                      "value": "The Beatles"
+                    },
+                    {
+                      "key": "title",
+                      "value": "Hey Jude"
+                    },
+                    {
+                      "key": "userId",
+                      "value": "550e8400-e29b-41d4-a716-446655440000"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"songId\": 1,\n  \"artist\": \"The Beatles\",\n  \"title\": \"Hey Jude\",\n  \"thumbsUpCount\": 5,\n  \"thumbsDownCount\": 2,\n  \"userRating\": \"THUMBS_UP\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Rating Counts (Without User)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/ratings/song?artist=The Beatles&title=Hey Jude",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ratings",
+                "song"
+              ],
+              "query": [
+                {
+                  "key": "artist",
+                  "value": "The Beatles",
+                  "description": "Artist name (required)"
+                },
+                {
+                  "key": "title",
+                  "value": "Hey Jude",
+                  "description": "Song title (required)"
+                }
+              ]
+            },
+            "description": "Get rating counts for a song without user-specific information. Returns only aggregate counts."
+          },
+          "response": [
+            {
+              "name": "Success Without User Rating",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/ratings/song?artist=The Beatles&title=Hey Jude",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "ratings",
+                    "song"
+                  ],
+                  "query": [
+                    {
+                      "key": "artist",
+                      "value": "The Beatles"
+                    },
+                    {
+                      "key": "title",
+                      "value": "Hey Jude"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"songId\": 1,\n  \"artist\": \"The Beatles\",\n  \"title\": \"Hey Jude\",\n  \"thumbsUpCount\": 5,\n  \"thumbsDownCount\": 2,\n  \"userRating\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Rating for Unrated Song",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/ratings/song?artist=Unknown Artist&title=Unknown Song",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "ratings",
+                "song"
+              ],
+              "query": [
+                {
+                  "key": "artist",
+                  "value": "Unknown Artist"
+                },
+                {
+                  "key": "title",
+                  "value": "Unknown Song"
+                }
+              ]
+            },
+            "description": "Get rating counts for a song that hasn't been rated yet. Returns zero counts."
+          },
+          "response": [
+            {
+              "name": "Unrated Song Response",
+              "originalRequest": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/ratings/song?artist=Unknown Artist&title=Unknown Song",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "api",
+                    "ratings",
+                    "song"
+                  ],
+                  "query": [
+                    {
+                      "key": "artist",
+                      "value": "Unknown Artist"
+                    },
+                    {
+                      "key": "title",
+                      "value": "Unknown Song"
+                    }
+                  ]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "_postman_previewlanguage": "json",
+              "header": [
+                {
+                  "key": "Content-Type",
+                  "value": "application/json"
+                }
+              ],
+              "body": "{\n  \"songId\": null,\n  \"artist\": \"Unknown Artist\",\n  \"title\": \"Unknown Song\",\n  \"thumbsUpCount\": 0,\n  \"thumbsDownCount\": 0,\n  \"userRating\": null\n}"
+            }
+          ]
+        }
+      ],
+      "description": "Song rating endpoints - Submit thumbs up/down ratings and retrieve rating counts.\n\n**Key Features:**\n- Duplicate prevention (one vote per user per song)\n- Vote changing (switch from up to down or vice versa)\n- Idempotent operations\n- User identification via UUID"
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Generate a consistent UUID for this session if not already set",
+          "if (!pm.collectionVariables.get('userId')) {",
+          "    pm.collectionVariables.set('userId', pm.variables.replaceIn('{{$randomUUID}}'));",
+          "}"
+        ]
+      }
+    }
+  ]
+}
