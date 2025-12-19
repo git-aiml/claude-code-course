@@ -5,11 +5,15 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "songs",
-       uniqueConstraints = @UniqueConstraint(columnNames = {"artist", "title"}))
+       uniqueConstraints = @UniqueConstraint(columnNames = {"station_id", "artist", "title"}))
 public class Song {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "station_id", nullable = false)
+    private Station station;
 
     @Column(nullable = false, length = 500)
     private String artist;
@@ -47,6 +51,14 @@ public class Song {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Station getStation() {
+        return station;
+    }
+
+    public void setStation(Station station) {
+        this.station = station;
     }
 
     public String getArtist() {

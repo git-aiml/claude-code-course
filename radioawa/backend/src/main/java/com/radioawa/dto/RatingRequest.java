@@ -5,6 +5,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public class RatingRequest {
+    @NotBlank(message = "Station code is required")
+    private String stationCode;
+
     @NotBlank(message = "Artist is required")
     private String artist;
 
@@ -20,6 +23,14 @@ public class RatingRequest {
     private String ipAddress; // Optional, will be set by controller
 
     // Getters and Setters
+    public String getStationCode() {
+        return stationCode;
+    }
+
+    public void setStationCode(String stationCode) {
+        this.stationCode = stationCode;
+    }
+
     public String getArtist() {
         return artist;
     }

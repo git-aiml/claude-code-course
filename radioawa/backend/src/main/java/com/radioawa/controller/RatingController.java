@@ -79,13 +79,14 @@ public class RatingController {
         return request.getRemoteAddr();
     }
 
-    @GetMapping("/song")
+    @GetMapping("/counts")
     public ResponseEntity<RatingCountsResponse> getRatingCounts(
+            @RequestParam String stationCode,
             @RequestParam String artist,
             @RequestParam String title,
             @RequestParam(required = false) String userId) {
         try {
-            RatingCountsResponse response = ratingService.getRatingCounts(artist, title, userId);
+            RatingCountsResponse response = ratingService.getRatingCounts(stationCode, artist, title, userId);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

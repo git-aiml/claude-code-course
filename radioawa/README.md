@@ -14,12 +14,25 @@ Full-stack web application featuring HLS (HTTP Live Streaming) with 24-bit lossl
 
 ## Features
 
+### Audio Streaming
 - **High-Quality Audio**: 24-bit / 48 kHz lossless HLS streaming
+- **Multi-Station Support**: Switch between multiple radio stations (English & Hindi)
+- **Adaptive Streaming**: Automatic quality adjustment
+- **Cross-Browser Support**: Chrome, Firefox, Safari, Edge
+- **Error Recovery**: Built-in error handling and stream recovery
+
+### User Engagement
+- **Song Ratings**: Thumbs up/down voting system with real-time counts
+- **Now Playing**: Current song display with album artwork
+- **Recently Played**: History of last 5 songs played
+- **IP-Based Rate Limiting**: Anti-abuse protection (20 votes/hour/IP per station)
+- **Station Isolation**: Independent ratings for each station
+
+### User Experience
 - **Modern UI**: Clean, responsive design with radioawa branding
 - **Real-Time Controls**: Play/pause, volume control, live status indicators
-- **Cross-Browser Support**: Chrome, Firefox, Safari, Edge
-- **Adaptive Streaming**: Automatic quality adjustment
-- **Error Recovery**: Built-in error handling and stream recovery
+- **Station Selector**: Easy switching between radio stations
+- **Persistent Selection**: Last station choice remembered
 - **Backend Health Monitoring**: Real-time backend status display
 
 ## Prerequisites
@@ -35,30 +48,77 @@ Make sure you have the following installed:
 
 ```
 radioawa/
-├── backend/           # Spring Boot application
+├── backend/                          # Spring Boot application
+│   ├── src/main/java/com/radioawa/
+│   │   ├── RadioawaApplication.java  # Main Spring Boot app
+│   │   ├── controller/               # REST API controllers
+│   │   │   ├── HealthController.java
+│   │   │   ├── RatingController.java
+│   │   │   ├── StationController.java
+│   │   │   └── MetadataProxyController.java
+│   │   ├── service/                  # Business logic layer
+│   │   │   └── RatingService.java
+│   │   ├── repository/               # Data access layer
+│   │   │   ├── SongRepository.java
+│   │   │   ├── RatingRepository.java
+│   │   │   └── StationRepository.java
+│   │   ├── entity/                   # JPA entities
+│   │   │   ├── Song.java
+│   │   │   ├── Rating.java
+│   │   │   ├── Station.java
+│   │   │   └── RatingType.java
+│   │   ├── dto/                      # Data transfer objects
+│   │   │   ├── RatingRequest.java
+│   │   │   ├── RatingResponse.java
+│   │   │   ├── RatingCountsResponse.java
+│   │   │   └── StationResponse.java
+│   │   └── config/
+│   │       └── WebConfig.java        # CORS configuration
+│   ├── src/main/resources/
+│   │   ├── application.properties    # App configuration
+│   │   └── application.properties.example
+│   ├── pom.xml                       # Maven dependencies
+│   └── radioawa-api-collection.postman.json
+│
+├── frontend/                         # React + Vite application
 │   ├── src/
-│   │   ├── main/
-│   │   │   ├── java/com/radioawa/
-│   │   │   │   ├── RadioawaApplication.java
-│   │   │   │   └── controller/
-│   │   │   │       └── HealthController.java
-│   │   │   └── resources/
-│   │   └── test/
-│   └── pom.xml
-├── frontend/          # React + Vite application
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── RadioPlayer.jsx      # HLS streaming player
-│   │   │   └── RadioPlayer.css
+│   │   ├── components/               # React components
+│   │   │   ├── RadioPlayer.jsx       # HLS streaming player
+│   │   │   ├── NowPlaying.jsx        # Now playing widget
+│   │   │   ├── SongRating.jsx        # Rating widget
+│   │   │   ├── StationSelector.jsx   # Station switcher
+│   │   │   └── *.css                 # Component styles
+│   │   ├── contexts/                 # React Context API
+│   │   │   └── StationContext.jsx    # Station state management
+│   │   ├── services/                 # API client services
+│   │   │   ├── ratingService.js
+│   │   │   └── stationService.js
+│   │   ├── utils/                    # Utility functions
+│   │   │   ├── userIdentity.js
+│   │   │   └── stationStorage.js
 │   │   ├── App.jsx                   # Main app component
 │   │   ├── App.css
-│   │   ├── index.css                 # Global styles
 │   │   └── main.jsx
-│   ├── public/
 │   ├── index.html
 │   ├── package.json
 │   └── vite.config.js
-└── *.sh scripts # Automation scripts
+│
+├── Documentation/                    # Markdown documentation
+│   ├── README.md                     # This file
+│   ├── TECHNICAL-ARCHITECTURE.md     # Complete architecture guide
+│   ├── MULTI-STATION-FEATURE.md      # Multi-station implementation
+│   ├── HINDI-STATION-SETUP.md        # Hindi station setup guide
+│   ├── IP-TRACKING-IMPLEMENTATION.md # Rate limiting details
+│   ├── POSTMAN-GUIDE.md              # API testing guide
+│   ├── QUICKSTART.md                 # Quick start guide
+│   ├── SETUP.md                      # Detailed setup
+│   └── DEPLOYMENT.md                 # Production deployment
+│
+└── Scripts/                          # Automation scripts
+    ├── start-all.sh                  # Start all services
+    ├── stop-all.sh                   # Stop all services
+    ├── check-status.sh               # Check service status
+    └── db-cli.sh                     # Database CLI tool
 ```
 
 ## Quick Start
@@ -210,40 +270,66 @@ npm run preview
 npm run lint
 ```
 
-## Stream Configuration
+## Multi-Station Configuration
 
-The HLS stream URL is configured in the RadioPlayer component:
+radioawa supports multiple radio stations with independent streams and metadata.
 
-**File:** `frontend/src/components/RadioPlayer.jsx`
+### Current Stations
 
-```javascript
-const streamUrl = 'https://d3d4yli4hf5bmh.cloudfront.net/hls/live.m3u8'
+| Station | Code | Status | Stream Source |
+|---------|------|--------|---------------|
+| RadioAwa English | ENGLISH | Active | CloudFront HLS |
+| RadioAwa Hindi | HINDI | Active | All India Radio (AIR) |
+
+### Changing Station Configuration
+
+Stations are stored in the PostgreSQL database. To update a station:
+
+```sql
+UPDATE stations SET
+  stream_url = 'https://your-stream-url.com/live.m3u8',
+  metadata_url = 'https://your-metadata-api.com/json',
+  updated_at = CURRENT_TIMESTAMP
+WHERE code = 'HINDI';
 ```
 
-**To change the stream URL:**
-1. Open `frontend/src/components/RadioPlayer.jsx`
-2. Locate the `streamUrl` constant (around line 14)
-3. Update the URL to your HLS stream
-4. Save the file (HMR will auto-reload)
+### Adding a New Station
+
+```sql
+INSERT INTO stations (code, name, stream_url, metadata_url, is_active, display_order)
+VALUES (
+  'TAMIL',
+  'RadioAwa Tamil',
+  'https://your-stream.com/tamil/live.m3u8',
+  'https://your-metadata.com/tamil/metadata.json',
+  true,
+  3
+);
+```
 
 **Supported formats:**
 - HLS (.m3u8) - Recommended for adaptive streaming
 - Audio codec: AAC, MP3
 - Video codec: H.264 (for video streams)
 
+**See also:**
+- [MULTI-STATION-FEATURE.md](./MULTI-STATION-FEATURE.md) - Complete multi-station architecture
+- [HINDI-STATION-SETUP.md](./HINDI-STATION-SETUP.md) - Hindi station setup guide
+
 ## API Endpoints
 
 ### Postman Collection
 Import the complete API collection for easy testing:
 - **File:** `backend/radioawa-api-collection.postman.json`
-- **Guide:** `POSTMAN-GUIDE.md`
+- **Guide:** [POSTMAN-GUIDE.md](./POSTMAN-GUIDE.md)
 
 Import to Postman: **Import** → Select file → Done!
 
 ### Health Check
-- **GET** `/api/health` - Returns backend health status
+**GET** `/api/health`
 
-Example response:
+Returns backend health status.
+
 ```json
 {
   "status": "UP",
@@ -252,47 +338,146 @@ Example response:
 }
 ```
 
-### Song Ratings
-- **POST** `/api/ratings` - Submit thumbs up/down rating
-- **GET** `/api/ratings/song?artist={artist}&title={title}&userId={userId}` - Get rating counts
+### Stations API
+**GET** `/api/stations`
 
-Example rating request:
+Returns list of all active radio stations.
+
+```json
+[
+  {
+    "id": 1,
+    "code": "ENGLISH",
+    "name": "RadioAwa English",
+    "streamUrl": "https://...",
+    "metadataUrl": "https://...",
+    "isActive": true,
+    "displayOrder": 1
+  }
+]
+```
+
+### Song Ratings API
+
+**POST** `/api/ratings`
+
+Submit a thumbs up/down rating for a song.
+
+Request:
 ```json
 {
-  "artist": "The Beatles",
-  "title": "Hey Jude",
+  "artist": "Arijit Singh",
+  "title": "Tum Hi Ho",
   "userId": "550e8400-e29b-41d4-a716-446655440000",
-  "ratingType": "THUMBS_UP"
+  "ratingType": "THUMBS_UP",
+  "stationCode": "HINDI"
 }
 ```
 
-See `backend/radioawa-api-collection.postman.json` for all endpoints and examples.
+Response:
+```json
+{
+  "songId": 123,
+  "artist": "Arijit Singh",
+  "title": "Tum Hi Ho",
+  "thumbsUpCount": 42,
+  "thumbsDownCount": 5,
+  "userRating": "THUMBS_UP",
+  "message": "Rating submitted successfully"
+}
+```
+
+**GET** `/api/ratings/counts?artist={artist}&title={title}&stationCode={code}&userId={userId}`
+
+Get rating counts for a specific song.
+
+```json
+{
+  "songId": 123,
+  "artist": "Arijit Singh",
+  "title": "Tum Hi Ho",
+  "thumbsUpCount": 42,
+  "thumbsDownCount": 5,
+  "userRating": "THUMBS_UP"
+}
+```
+
+### Metadata Proxy API
+
+**GET** `/api/metadata/hindi`
+
+Get simulated metadata for Hindi station.
+
+```json
+{
+  "artist": "Arijit Singh",
+  "title": "Tum Hi Ho",
+  "album": "Aashiqui 2",
+  "timestamp": "2024-12-19T08:02:34",
+  "prev_artist_1": "Shreya Ghoshal",
+  "prev_title_1": "Deewani Mastani"
+}
+```
+
+**Rate Limiting:**
+- Maximum 20 votes per hour per IP address per station
+- Returns HTTP 429 (Too Many Requests) when limit exceeded
+
+See [POSTMAN-GUIDE.md](./POSTMAN-GUIDE.md) for all endpoints and testing examples.
 
 ## Database Management
 
-### Connect to PostgreSQL
+### Database CLI Tool
+
+We provide an interactive CLI for common database operations:
 
 ```bash
-# Using docker exec
-psql -U radioawa -d radioawa
+./db-cli.sh
+```
 
-# Using psql directly (if installed)
+**Features:**
+- List all tables
+- View songs and ratings
+- Show top rated songs
+- Count records
+- Run custom queries
+- Clear data (with confirmation)
+
+### Connect to PostgreSQL Manually
+
+```bash
+# Using psql (via Homebrew)
+/opt/homebrew/opt/postgresql@16/bin/psql -U radioawa -d radioawa
+
+# Or if psql is in PATH
 psql -h localhost -p 5432 -U radioawa -d radioawa
 ```
 
 Password: `radioawa_dev_password`
 
+### Database Schema
+
+**Tables:**
+- `stations` - Radio station configurations
+- `songs` - Song metadata (station-scoped)
+- `ratings` - User ratings with IP tracking
+
+**Relationships:**
+- Songs belong to one Station (many-to-one)
+- Ratings belong to one Song (many-to-one)
+
 ### Stop the Database
 
 ```bash
-brew services down
+brew services stop postgresql@16
 ```
 
 ### Reset the Database
 
 ```bash
-brew services down -v  # Removes volumes
-brew services up -d
+# Drop and recreate (caution: data loss!)
+/opt/homebrew/opt/postgresql@16/bin/psql -U radioawa -d postgres -c "DROP DATABASE radioawa;"
+/opt/homebrew/opt/postgresql@16/bin/psql -U radioawa -d postgres -c "CREATE DATABASE radioawa;"
 ```
 
 ## Configuration
@@ -415,19 +600,70 @@ The radioawa player works on all modern browsers:
 
 ## Documentation
 
-- [SETUP.md](./SETUP.md) - Detailed setup and installation guide
+### Getting Started
+- [README.md](./README.md) - This file (overview and quick start)
+- [QUICKSTART.md](./QUICKSTART.md) - Quick start guide with scripts
+- [START-HERE.md](./START-HERE.md) - New user orientation
+- [SETUP.md](./SETUP.md) - Detailed setup and installation
+
+### Features & Implementation
+- [TECHNICAL-ARCHITECTURE.md](./TECHNICAL-ARCHITECTURE.md) - Complete system architecture
+- [MULTI-STATION-FEATURE.md](./MULTI-STATION-FEATURE.md) - Multi-station implementation guide
+- [HINDI-STATION-SETUP.md](./HINDI-STATION-SETUP.md) - Hindi station configuration
+- [IP-TRACKING-IMPLEMENTATION.md](./IP-TRACKING-IMPLEMENTATION.md) - Rate limiting and IP tracking
+- [ARTWORK-SETUP.md](./ARTWORK-SETUP.md) - Album artwork configuration
+
+### API & Testing
+- [POSTMAN-GUIDE.md](./POSTMAN-GUIDE.md) - API testing with Postman
+- `backend/radioawa-api-collection.postman.json` - Postman collection
+
+### Deployment
 - [DEPLOYMENT.md](./DEPLOYMENT.md) - Production deployment instructions
 
-## Next Steps
+## Current Implementation Status
 
-- Add authentication and authorization
-- Create database entities and repositories
-- Build REST API endpoints for playlist management
-- Add track metadata display
-- Implement error handling
-- Add testing (JUnit for backend, Vitest for frontend)
-- Set up CI/CD pipeline
-- Add logging and monitoring
+✅ **Completed Features:**
+- Multi-station support (English & Hindi)
+- HLS audio streaming with HLS.js
+- Song rating system (thumbs up/down)
+- IP-based rate limiting (20 votes/hour/IP per station)
+- Now Playing widget with album artwork
+- Recently Played history (5 songs)
+- Station-scoped ratings isolation
+- Metadata proxy for Hindi station
+- PostgreSQL database with JPA/Hibernate
+- RESTful API with Spring Boot
+- Responsive React UI with Vite
+- CORS configuration
+- Error handling and recovery
+
+## Future Enhancements
+
+### Phase 1: Production Readiness
+- [ ] HTTPS/TLS implementation
+- [ ] Authentication and authorization (OAuth 2.0/JWT)
+- [ ] API rate limiting middleware
+- [ ] Comprehensive unit and integration tests
+- [ ] CI/CD pipeline (GitHub Actions)
+- [ ] Monitoring and observability (Prometheus/Grafana)
+
+### Phase 2: Scalability
+- [ ] Redis caching for rating counts
+- [ ] Database read replicas
+- [ ] CDN integration for static assets
+- [ ] Load balancer for horizontal scaling
+- [ ] Message queue for async processing
+
+### Phase 3: Advanced Features
+- [ ] User accounts and profiles
+- [ ] Playlist management
+- [ ] Social features (sharing, comments)
+- [ ] Analytics dashboard
+- [ ] Admin panel for station management
+- [ ] Real-time listener count
+- [ ] Multi-language support
+
+See [TECHNICAL-ARCHITECTURE.md](./TECHNICAL-ARCHITECTURE.md) for detailed roadmap.
 
 ## License
 

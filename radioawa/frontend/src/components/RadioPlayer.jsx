@@ -1,9 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import Hls from 'hls.js'
+import { useStation } from '../contexts/StationContext'
 import NowPlaying from './NowPlaying'
 import './RadioPlayer.css'
 
 function RadioPlayer() {
+  const { currentStation } = useStation()
   const audioRef = useRef(null)
   const hlsRef = useRef(null)
   const [isPlaying, setIsPlaying] = useState(false)
@@ -11,11 +13,17 @@ function RadioPlayer() {
   const [status, setStatus] = useState('offline')
   const [error, setError] = useState('')
 
-  const streamUrl = 'https://d3d4yli4hf5bmh.cloudfront.net/hls/live.m3u8'
+  const streamUrl = currentStation?.streamUrl
 
   useEffect(() => {
     const audio = audioRef.current
-    if (!audio) return
+    if (!audio || !streamUrl) return
+
+    // Cleanup previous HLS instance if exists
+    if (hlsRef.current) {
+      hlsRef.current.destroy()
+      hlsRef.current = null
+    }
 
     if (Hls.isSupported()) {
       const hls = new Hls({
@@ -64,7 +72,7 @@ function RadioPlayer() {
       showError('HLS is not supported in your browser.')
       setStatus('error')
     }
-  }, [])
+  }, [streamUrl])
 
   useEffect(() => {
     const audio = audioRef.current

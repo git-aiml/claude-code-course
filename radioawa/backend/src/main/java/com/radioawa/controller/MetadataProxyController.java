@@ -1,0 +1,130 @@
+package com.radioawa.controller;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+
+/**
+ * Metadata Proxy Controller
+ * Provides metadata for stations that don't have their own metadata endpoints
+ *
+ * Author: Sujit K Singh
+ */
+@RestController
+@RequestMapping("/api/metadata")
+@CrossOrigin(origins = "http://localhost:5171")
+public class MetadataProxyController {
+
+    // Sample Hindi songs for demonstration
+    private static final List<Map<String, String>> HINDI_SONGS = Arrays.asList(
+        createSong("Arijit Singh", "Tum Hi Ho", "Aashiqui 2"),
+        createSong("Shreya Ghoshal", "Sunn Raha Hai", "Aashiqui 2"),
+        createSong("Atif Aslam", "Jeene Laga Hoon", "Ramaiya Vastavaiya"),
+        createSong("Arijit Singh", "Chahun Main Ya Naa", "Aashiqui 2"),
+        createSong("Mohit Chauhan", "Tum Se Hi", "Jab We Met"),
+        createSong("Shreya Ghoshal", "Teri Meri", "Bodyguard"),
+        createSong("Arijit Singh", "Channa Mereya", "Ae Dil Hai Mushkil"),
+        createSong("Neha Kakkar", "Aankh Marey", "Simmba"),
+        createSong("Armaan Malik", "Bol Do Na Zara", "Azhar"),
+        createSong("Atif Aslam", "Pehli Nazar Mein", "Race"),
+        createSong("Arijit Singh", "Ae Dil Hai Mushkil", "Ae Dil Hai Mushkil"),
+        createSong("Shreya Ghoshal", "Deewani Mastani", "Bajirao Mastani"),
+        createSong("Arijit Singh", "Raabta", "Agent Vinod"),
+        createSong("Neha Kakkar", "Dilbar", "Satyameva Jayate"),
+        createSong("Sonu Nigam", "Abhi Mujh Mein Kahin", "Agneepath")
+    );
+
+    private int currentSongIndex = 0;
+    private LocalDateTime lastSongChange = LocalDateTime.now();
+    private static final int SONG_DURATION_MINUTES = 4; // Average song duration
+
+    private static Map<String, String> createSong(String artist, String title, String album) {
+        Map<String, String> song = new HashMap<>();
+        song.put("artist", artist);
+        song.put("title", title);
+        song.put("album", album);
+        return song;
+    }
+
+    /**
+     * Get current metadata for Hindi station
+     * Simulates a rotating playlist
+     */
+    @GetMapping("/hindi")
+    public ResponseEntity<Map<String, Object>> getHindiMetadata() {
+        // Check if it's time to change to next song
+        LocalDateTime now = LocalDateTime.now();
+        long minutesSinceLastChange = java.time.Duration.between(lastSongChange, now).toMinutes();
+
+        if (minutesSinceLastChange >= SONG_DURATION_MINUTES) {
+            currentSongIndex = (currentSongIndex + 1) % HINDI_SONGS.size();
+            lastSongChange = now;
+        }
+
+        Map<String, String> currentSong = HINDI_SONGS.get(currentSongIndex);
+
+        Map<String, Object> metadata = new HashMap<>();
+        metadata.put("artist", currentSong.get("artist"));
+        metadata.put("title", currentSong.get("title"));
+        metadata.put("album", currentSong.get("album"));
+        metadata.put("timestamp", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+
+        // Add previous songs (recently played)
+        List<Map<String, String>> queue = new ArrayList<>();
+        for (int i = 1; i <= 5; i++) {
+            int prevIndex = (currentSongIndex - i + HINDI_SONGS.size()) % HINDI_SONGS.size();
+            Map<String, String> prevSong = HINDI_SONGS.get(prevIndex);
+            Map<String, String> queueSong = new HashMap<>();
+            queueSong.put("artist", prevSong.get("artist"));
+            queueSong.put("title", prevSong.get("title"));
+            queue.add(queueSong);
+        }
+
+        // Add to metadata in the format expected by frontend
+        for (int i = 0; i < queue.size(); i++) {
+            metadata.put("prev_artist_" + (i + 1), queue.get(i).get("artist"));
+            metadata.put("prev_title_" + (i + 1), queue.get(i).get("title"));
+        }
+
+        return ResponseEntity.ok(metadata);
+    }
+
+    /**
+     * Get album artwork for Hindi station
+     * Returns a placeholder or redirect to actual artwork
+     */
+    @GetMapping("/hindi/artwork")
+    public ResponseEntity<Map<String, String>> getHindiArtwork() {
+        Map<String, String> artwork = new HashMap<>();
+        artwork.put("url", "https://via.placeholder.com/300x300.png?text=Hindi+Music");
+        artwork.put("artist", HINDI_SONGS.get(currentSongIndex).get("artist"));
+        artwork.put("title", HINDI_SONGS.get(currentSongIndex).get("title"));
+        return ResponseEntity.ok(artwork);
+    }
+
+    /**
+     * Manually advance to next song (for testing)
+     */
+    @PostMapping("/hindi/next")
+    public ResponseEntity<Map<String, Object>> nextSong() {
+        currentSongIndex = (currentSongIndex + 1) % HINDI_SONGS.size();
+        lastSongChange = LocalDateTime.now();
+        return getHindiMetadata();
+    }
+
+    /**
+     * Get playlist info
+     */
+    @GetMapping("/hindi/playlist")
+    public ResponseEntity<Map<String, Object>> getPlaylist() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("totalSongs", HINDI_SONGS.size());
+        response.put("currentIndex", currentSongIndex);
+        response.put("currentSong", HINDI_SONGS.get(currentSongIndex));
+        response.put("playlist", HINDI_SONGS);
+        return ResponseEntity.ok(response);
+    }
+}

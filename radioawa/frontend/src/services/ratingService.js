@@ -3,7 +3,7 @@ const API_BASE = '/api/ratings';
 /**
  * Submit a rating for a song
  */
-export async function submitRating(artist, title, userId, ratingType) {
+export async function submitRating(artist, title, userId, ratingType, stationCode) {
   const response = await fetch(API_BASE, {
     method: 'POST',
     headers: {
@@ -14,6 +14,7 @@ export async function submitRating(artist, title, userId, ratingType) {
       title,
       userId,
       ratingType, // 'THUMBS_UP' or 'THUMBS_DOWN'
+      stationCode,
     }),
   });
 
@@ -31,17 +32,18 @@ export async function submitRating(artist, title, userId, ratingType) {
 /**
  * Get rating counts for a song
  */
-export async function getRatingCounts(artist, title, userId = null) {
+export async function getRatingCounts(artist, title, userId = null, stationCode) {
   const params = new URLSearchParams({
     artist,
     title,
+    stationCode,
   });
 
   if (userId) {
     params.append('userId', userId);
   }
 
-  const response = await fetch(`${API_BASE}/song?${params.toString()}`);
+  const response = await fetch(`${API_BASE}/counts?${params.toString()}`);
 
   if (!response.ok) {
     throw new Error(`Failed to get rating counts: ${response.statusText}`);

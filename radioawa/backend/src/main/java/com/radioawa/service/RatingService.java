@@ -6,8 +6,10 @@ import com.radioawa.dto.RatingResponse;
 import com.radioawa.entity.Rating;
 import com.radioawa.entity.RatingType;
 import com.radioawa.entity.Song;
+import com.radioawa.entity.Station;
 import com.radioawa.repository.RatingRepository;
 import com.radioawa.repository.SongRepository;
+import com.radioawa.repository.StationRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
@@ -18,33 +20,40 @@ public class RatingService {
 
     private final SongRepository songRepository;
     private final RatingRepository ratingRepository;
+    private final StationRepository stationRepository;
 
-    // Rate limiting: Max votes per IP per hour
+    // Rate limiting: Max votes per IP per hour per station
     private static final int MAX_VOTES_PER_HOUR_PER_IP = 20;
     private static final int RATE_LIMIT_HOURS = 1;
 
-    public RatingService(SongRepository songRepository, RatingRepository ratingRepository) {
+    public RatingService(SongRepository songRepository, RatingRepository ratingRepository, StationRepository stationRepository) {
         this.songRepository = songRepository;
         this.ratingRepository = ratingRepository;
+        this.stationRepository = stationRepository;
     }
 
     @Transactional
     public RatingResponse submitRating(RatingRequest request) {
-        // IP-based rate limiting check
+        // Lookup station by code
+        Station station = stationRepository.findByCode(request.getStationCode())
+                .orElseThrow(() -> new RuntimeException("Station not found: " + request.getStationCode()));
+
+        // IP-based rate limiting check (per station)
         if (request.getIpAddress() != null && !request.getIpAddress().isEmpty()) {
             java.time.LocalDateTime rateLimitStart = java.time.LocalDateTime.now().minusHours(RATE_LIMIT_HOURS);
-            long recentVotesFromIp = ratingRepository.countByIpAddressAndCreatedAtAfter(
-                request.getIpAddress(), rateLimitStart);
+            long recentVotesFromIp = ratingRepository.countByStationAndIpAddressAndCreatedAtAfter(
+                station, request.getIpAddress(), rateLimitStart);
 
             if (recentVotesFromIp >= MAX_VOTES_PER_HOUR_PER_IP) {
                 throw new RuntimeException("Rate limit exceeded. Maximum " + MAX_VOTES_PER_HOUR_PER_IP +
-                    " votes per hour allowed.");
+                    " votes per hour allowed per station.");
             }
         }
-        // Find or create song
-        Song song = songRepository.findByArtistAndTitle(request.getArtist(), request.getTitle())
+        // Find or create song (station-scoped)
+        Song song = songRepository.findByStationAndArtistAndTitle(station, request.getArtist(), request.getTitle())
                 .orElseGet(() -> {
                     Song newSong = new Song();
+                    newSong.setStation(station);
                     newSong.setArtist(request.getArtist());
                     newSong.setTitle(request.getTitle());
                     newSong.setThumbsUpCount(0);
@@ -100,8 +109,13 @@ public class RatingService {
         return buildRatingResponse(song, request.getRatingType(), "Rating submitted successfully");
     }
 
-    public RatingCountsResponse getRatingCounts(String artist, String title, String userId) {
-        Optional<Song> songOpt = songRepository.findByArtistAndTitle(artist, title);
+    public RatingCountsResponse getRatingCounts(String stationCode, String artist, String title, String userId) {
+        // Lookup station by code
+        Station station = stationRepository.findByCode(stationCode)
+                .orElseThrow(() -> new RuntimeException("Station not found: " + stationCode));
+
+        // Find song (station-scoped)
+        Optional<Song> songOpt = songRepository.findByStationAndArtistAndTitle(station, artist, title);
 
         if (songOpt.isEmpty()) {
             // Song not rated yet

@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useStation } from '../contexts/StationContext';
 import { getUserId } from '../utils/userIdentity';
 import { submitRating, getRatingCounts } from '../services/ratingService';
 import './SongRating.css';
 
 function SongRating({ artist, title, compact = false }) {
+  const { currentStation } = useStation();
   const [userId] = useState(getUserId());
   const [ratings, setRatings] = useState({
     thumbsUpCount: 0,
@@ -15,11 +17,11 @@ function SongRating({ artist, title, compact = false }) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!artist || !title) return;
+    if (!artist || !title || !currentStation) return;
 
     const fetchRatings = async () => {
       try {
-        const data = await getRatingCounts(artist, title, userId);
+        const data = await getRatingCounts(artist, title, userId, currentStation.code);
         setRatings({
           thumbsUpCount: data.thumbsUpCount || 0,
           thumbsDownCount: data.thumbsDownCount || 0,
@@ -35,7 +37,7 @@ function SongRating({ artist, title, compact = false }) {
     };
 
     fetchRatings();
-  }, [artist, title, userId]);
+  }, [artist, title, userId, currentStation]);
 
   const handleRating = async (ratingType) => {
     if (submitting) return;
@@ -75,7 +77,7 @@ function SongRating({ artist, title, compact = false }) {
     setRatings(newRatings);
 
     try {
-      const response = await submitRating(artist, title, userId, ratingType);
+      const response = await submitRating(artist, title, userId, ratingType, currentStation.code);
       // Update with server response
       setRatings({
         thumbsUpCount: response.thumbsUpCount,

@@ -1,18 +1,22 @@
 import { useState, useEffect } from 'react'
+import { useStation } from '../contexts/StationContext'
 import SongRating from './SongRating'
 import './NowPlaying.css'
 
 function NowPlaying() {
+  const { currentStation } = useStation()
   const [metadata, setMetadata] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [artworkUrl, setArtworkUrl] = useState(null)
   const [artworkError, setArtworkError] = useState(false)
 
-  const metadataUrl = 'https://d3d4yli4hf5bmh.cloudfront.net/metadatav2.json'
-  const albumArtUrl = 'https://d3d4yli4hf5bmh.cloudfront.net/cover.jpg'
+  const metadataUrl = currentStation?.metadataUrl
+  const albumArtUrl = currentStation?.albumArtUrl
 
   const fetchMetadata = async () => {
+    if (!metadataUrl) return
+
     try {
       const response = await fetch(metadataUrl)
       if (!response.ok) {
@@ -52,6 +56,8 @@ function NowPlaying() {
   }
 
   useEffect(() => {
+    if (!metadataUrl) return
+
     // Initial fetch
     fetchMetadata()
 
@@ -59,7 +65,7 @@ function NowPlaying() {
     const interval = setInterval(fetchMetadata, 10000)
 
     return () => clearInterval(interval)
-  }, [])
+  }, [metadataUrl])
 
   if (loading) {
     return (
