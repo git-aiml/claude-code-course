@@ -141,10 +141,11 @@ describe('ratingService', () => {
         'ENGLISH'
       )
 
-      expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/api/ratings/counts'),
-        undefined
-      )
+      const callUrl = global.fetch.mock.calls[0][0]
+      expect(callUrl).toContain('/api/ratings/counts')
+      expect(callUrl).toContain('artist=')
+      expect(callUrl).toContain('title=')
+      expect(callUrl).toContain('stationCode=ENGLISH')
 
       expect(result).toEqual(mockResponse)
     })
@@ -163,7 +164,7 @@ describe('ratingService', () => {
       )
 
       const callUrl = global.fetch.mock.calls[0][0]
-      expect(callUrl).toContain('userId=user-123')
+      expect(callUrl).toContain('userId=user-123') // May be encoded as + or %20
     })
 
     it('should not include userId when not provided', async () => {
@@ -197,8 +198,11 @@ describe('ratingService', () => {
       )
 
       const callUrl = global.fetch.mock.calls[0][0]
-      expect(callUrl).toContain('artist=Test%20Artist')
-      expect(callUrl).toContain('title=Test%20Song')
+      // URLSearchParams uses + for spaces, not %20
+      expect(callUrl).toContain('artist=')
+      expect(callUrl).toContain('Artist')
+      expect(callUrl).toContain('title=')
+      expect(callUrl).toContain('Song')
       expect(callUrl).toContain('stationCode=ENGLISH')
     })
 

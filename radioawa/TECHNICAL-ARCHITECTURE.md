@@ -134,6 +134,28 @@ eslint         → Code quality and linting
 | **Process Management** | Shell Scripts | Start/stop/status management |
 | **Database Tools** | psql, custom db-cli.sh | Database administration |
 
+### Testing Framework
+
+| Component | Technology | Version | Purpose |
+|-----------|-----------|---------|---------|
+| **Backend Testing** | JUnit 5 | Included in spring-boot-starter-test | Unit test framework |
+| **Backend Mocking** | Mockito | Included in spring-boot-starter-test | Mock object creation |
+| **Backend Assertions** | AssertJ | Latest | Fluent assertion library |
+| **Backend Coverage** | JaCoCo | 0.8.10 | Code coverage measurement |
+| **DB Testing** | TestContainers | 1.19.3 | Docker-based integration testing |
+| **Frontend Testing** | Vitest | 1.0.4 | Fast unit test runner for Vite |
+| **Frontend Components** | React Testing Library | 14.1.2 | Component testing utilities |
+| **Frontend Interactions** | @testing-library/user-event | 14.5.1 | User interaction simulation |
+
+**Test Execution**:
+- Backend: `mvn test` (JUnit 5 via Maven Surefire)
+- Frontend: `npm run test` (Vitest)
+
+**Coverage Goals**:
+- Overall: 80%+
+- Backend: JaCoCo report at `target/site/jacoco/index.html`
+- Frontend: Coverage report at `coverage/index.html`
+
 ---
 
 ## System Architecture

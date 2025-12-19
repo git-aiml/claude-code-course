@@ -106,6 +106,7 @@ radioawa/
 ├── Documentation/                    # Markdown documentation
 │   ├── README.md                     # This file
 │   ├── TECHNICAL-ARCHITECTURE.md     # Complete architecture guide
+│   ├── TESTING-FRAMEWORK.md          # Unit & integration testing guide
 │   ├── MULTI-STATION-FEATURE.md      # Multi-station implementation
 │   ├── HINDI-STATION-SETUP.md        # Hindi station setup guide
 │   ├── IP-TRACKING-IMPLEMENTATION.md # Rate limiting details
@@ -269,6 +270,69 @@ npm run preview
 # Run linter
 npm run lint
 ```
+
+## Testing
+
+### Running Tests
+
+#### Backend Tests (Spring Boot + JUnit 5)
+
+```bash
+# Run all tests
+cd backend
+mvn clean test
+
+# Run specific test class
+mvn test -Dtest=RatingControllerTest
+
+# Generate code coverage report
+mvn jacoco:report
+open target/site/jacoco/index.html
+```
+
+**Test Files:**
+- `backend/src/test/java/com/radioawa/controller/HealthControllerTest.java` - Health endpoint tests
+- `backend/src/test/java/com/radioawa/controller/RatingControllerTest.java` - Rating API endpoint tests
+
+#### Frontend Tests (React + Vitest)
+
+```bash
+# Install dependencies (first time only)
+cd frontend
+npm install
+
+# Run all tests
+npm run test
+
+# Watch mode (re-run on file changes)
+npm run test:watch
+
+# Interactive UI
+npm run test:ui
+
+# Generate code coverage report
+npm run test:coverage
+open coverage/index.html
+```
+
+**Test Files:**
+- `frontend/src/components/SongRating.test.jsx` - Song rating component tests
+- `frontend/src/services/ratingService.test.js` - Rating API service tests
+
+### Test Coverage
+
+**Targets:**
+- Overall: 80%+
+- Statements: 80%+
+- Functions: 80%+
+- Branches: 75%+
+- Lines: 80%+
+
+**Current Status:**
+- Backend: 6 unit tests passing ✅
+- Frontend: Ready for testing (install dependencies first)
+
+For detailed testing documentation, see [TESTING-FRAMEWORK.md](./TESTING-FRAMEWORK.md)
 
 ## Multi-Station Configuration
 

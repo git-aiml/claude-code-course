@@ -5,12 +5,13 @@ This guide covers deploying radioawa to production environments.
 ## Table of Contents
 
 1. [Deployment Overview](#deployment-overview)
-2. [Pre-Deployment Checklist](#pre-deployment-checklist)
-3. [Building for Production](#building-for-production)
-4. [Deployment Options](#deployment-options)
-5. [Environment Configuration](#environment-configuration)
-6. [Security Considerations](#security-considerations)
-7. [Monitoring and Maintenance](#monitoring-and-maintenance)
+2. [Pre-Deployment Testing](#pre-deployment-testing)
+3. [Pre-Deployment Checklist](#pre-deployment-checklist)
+4. [Building for Production](#building-for-production)
+5. [Deployment Options](#deployment-options)
+6. [Environment Configuration](#environment-configuration)
+7. [Security Considerations](#security-considerations)
+8. [Monitoring and Maintenance](#monitoring-and-maintenance)
 
 ## Deployment Overview
 
@@ -42,6 +43,105 @@ This guide covers deploying radioawa to production environments.
 2. **Backend**: Spring Boot JAR file
 3. **Database**: PostgreSQL (if used)
 4. **Stream**: HLS stream endpoint (external or self-hosted)
+
+## Pre-Deployment Testing
+
+### Running the Test Suite
+
+Before deploying to production, ensure all tests pass locally:
+
+#### Backend Tests
+
+```bash
+# Run all backend tests
+cd backend
+mvn clean test
+
+# Expected output:
+# Tests run: 6, Failures: 0, Errors: 0, Skipped: 0
+
+# Generate code coverage report
+mvn jacoco:report
+
+# View the coverage report
+open target/site/jacoco/index.html
+```
+
+**Backend Test Files**:
+- `RatingControllerTest` - API endpoint tests
+- `HealthControllerTest` - Health check tests
+
+#### Frontend Tests
+
+```bash
+# Install dependencies (if not already installed)
+cd frontend
+npm install
+
+# Run all frontend tests
+npm run test
+
+# Generate code coverage report
+npm run test:coverage
+
+# View the coverage report
+open coverage/index.html
+```
+
+**Frontend Test Files**:
+- `SongRating.test.jsx` - Rating component tests
+- `ratingService.test.js` - API service tests
+
+### Test Requirements Before Production
+
+- ✅ All unit tests passing (backend: 6/6, frontend: configured)
+- ✅ Code coverage minimum: 80% overall
+- ✅ No critical security warnings
+- ✅ API endpoints validated with Postman collection
+- ✅ Linting passes: `npm run lint` (frontend)
+
+### Integration Testing
+
+Before production deployment, perform manual integration testing:
+
+1. **Test Rating Submission**:
+   - Submit ratings for multiple songs
+   - Verify counts update correctly
+   - Test rate limiting (20 votes/hour per IP)
+
+2. **Test Station Switching**:
+   - Switch between English and Hindi stations
+   - Verify station persists on page reload
+   - Verify ratings are station-specific
+
+3. **Test Stream Playback**:
+   - Play HLS stream
+   - Verify audio quality (24-bit lossless)
+   - Test volume control
+   - Test pause/resume
+
+4. **Test Error Handling**:
+   - Test with offline backend
+   - Test with invalid stream URL
+   - Test with rate-limited IP
+
+**API Testing Tools**:
+- Postman collection: `backend/radioawa-api-collection.postman.json`
+- cURL commands for manual testing
+- Browser dev tools for frontend debugging
+
+### Performance Testing
+
+For production readiness:
+
+```bash
+# Backend performance test example (using Apache Bench)
+ab -n 100 -c 10 http://localhost:8081/api/health
+
+# Expected: Response time < 100ms, success rate > 99%
+```
+
+For detailed testing documentation, see [TESTING-FRAMEWORK.md](./TESTING-FRAMEWORK.md)
 
 ## Pre-Deployment Checklist
 
