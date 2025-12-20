@@ -2,6 +2,10 @@
 
 This guide covers deploying radioawa to production environments.
 
+> **💡 Quick Deployment with Docker (Recommended)**: For the fastest and most reliable deployment, see [DOCKER-DEPLOYMENT.md](./DOCKER-DEPLOYMENT.md). The Docker deployment is production-ready with security hardening, multi-stage builds, and automated database initialization.
+>
+> This guide is for **traditional/manual deployment** if you prefer VPS hosting or platform-as-a-service solutions.
+
 ## Table of Contents
 
 1. [Deployment Overview](#deployment-overview)
@@ -9,9 +13,10 @@ This guide covers deploying radioawa to production environments.
 3. [Pre-Deployment Checklist](#pre-deployment-checklist)
 4. [Building for Production](#building-for-production)
 5. [Deployment Options](#deployment-options)
-6. [Environment Configuration](#environment-configuration)
-7. [Security Considerations](#security-considerations)
-8. [Monitoring and Maintenance](#monitoring-and-maintenance)
+6. [Multi-Station Configuration](#multi-station-configuration)
+7. [Environment Configuration](#environment-configuration)
+8. [Security Considerations](#security-considerations)
+9. [Monitoring and Maintenance](#monitoring-and-maintenance)
 
 ## Deployment Overview
 
@@ -24,25 +29,39 @@ This guide covers deploying radioawa to production environments.
          │
     ┌────▼─────┐
     │ Frontend │ (Static files - React)
-    │  Server  │
+    │  Server  │ (Station Selector + Player + Ratings)
     └────┬─────┘
          │
     ┌────▼─────┐
     │ Backend  │ (Spring Boot API)
-    │  Server  │
+    │  Server  │ (Stations + Ratings + Metadata Proxy)
     └────┬─────┘
          │
     ┌────▼─────┐
-    │Database  │ (PostgreSQL)
-    └──────────┘
+    │Database  │ (PostgreSQL - Multi-Station)
+    └──────────┘ (Stations, Songs, Ratings)
 ```
 
 ### Components to Deploy
 
 1. **Frontend**: Static React build (HTML, CSS, JS)
+   - Multi-station selector
+   - HLS audio player
+   - Song rating system
+
 2. **Backend**: Spring Boot JAR file
-3. **Database**: PostgreSQL (if used)
-4. **Stream**: HLS stream endpoint (external or self-hosted)
+   - REST API endpoints
+   - Metadata proxy for Hindi station
+   - IP-based rate limiting
+
+3. **Database**: PostgreSQL (Required)
+   - Station configurations (English & Hindi)
+   - Song metadata (station-scoped)
+   - User ratings (station-scoped, IP-tracked)
+
+4. **External Streams**: HLS stream endpoints
+   - English: CloudFront CDN
+   - Hindi: All India Radio (Vividh Bharati)
 
 ## Pre-Deployment Testing
 
@@ -450,130 +469,113 @@ Create `vercel.json`:
 }
 ```
 
-### Option 3: Docker Deployment
+### Option 3: Docker Deployment (Recommended)
 
-#### Create Dockerfiles
+RadioAwa includes complete Docker support with development and production configurations. For detailed Docker deployment instructions, see **[DOCKER-DEPLOYMENT.md](./DOCKER-DEPLOYMENT.md)**.
 
-**Backend Dockerfile:**
+#### Quick Docker Deployment
 
-```dockerfile
-# backend/Dockerfile
-FROM eclipse-temurin:17-jre-alpine
-
-WORKDIR /app
-
-COPY target/radioawa-backend-0.0.1-SNAPSHOT.jar app.jar
-
-EXPOSE 8080
-
-ENTRYPOINT ["java", "-jar", "app.jar"]
-```
-
-**Frontend Dockerfile:**
-
-```dockerfile
-# frontend/Dockerfile
-FROM node:18-alpine as build
-
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npm run build
-
-FROM nginx:alpine
-COPY --from=build /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
-```
-
-**Frontend nginx.conf:**
-
-```nginx
-server {
-    listen 80;
-    root /usr/share/nginx/html;
-    index index.html;
-
-    location / {
-        try_files $uri $uri/ /index.html;
-    }
-
-    location /api/ {
-        proxy_pass http://backend:8080;
-    }
-}
-```
-
-#### Production docker-compose.yml
-
-```yaml
-version: '3.8'
-
-services:
-  postgres:
-    image: postgres:16-alpine
-    environment:
-      POSTGRES_DB: radioawa
-      POSTGRES_USER: radioawa
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - radioawa-network
-
-  backend:
-    build: ./backend
-    environment:
-      DATABASE_URL: jdbc:postgresql://postgres:5432/radioawa
-      DB_USERNAME: radioawa
-      DB_PASSWORD: ${DB_PASSWORD}
-    depends_on:
-      - postgres
-    networks:
-      - radioawa-network
-
-  frontend:
-    build: ./frontend
-    ports:
-      - "80:80"
-      - "443:443"
-    depends_on:
-      - backend
-    volumes:
-      - ./ssl:/etc/nginx/ssl
-    networks:
-      - radioawa-network
-
-volumes:
-  postgres_data:
-
-networks:
-  radioawa-network:
-    driver: bridge
-```
-
-#### Deploy with Docker
-
+**Development:**
 ```bash
-# Build and start
-docker compose -f docker-compose.prod.yml up -d --build
+docker compose up -d
+# Access at http://localhost:5171
+```
+
+**Production:**
+```bash
+# Configure environment
+./docker-setup.sh
+
+# Deploy
+docker compose -f docker-compose.prod.yml up -d
 
 # View logs
 docker compose -f docker-compose.prod.yml logs -f
-
-# Stop
-docker compose -f docker-compose.prod.yml down
 ```
+
+**Features of Docker deployment:**
+- ✅ Multi-stage builds (70-90% smaller images)
+- ✅ Automatic database initialization with multi-station setup
+- ✅ Hot reload in development
+- ✅ Security hardening in production
+- ✅ Health checks for all services
+- ✅ Automatic CORS configuration
+- ✅ Complete environment isolation
+
+For full Docker documentation including:
+- Architecture details
+- Development vs production configurations
+- Security features
+- Troubleshooting
+- Docker best practices
+
+See: **[DOCKER-DEPLOYMENT.md](./DOCKER-DEPLOYMENT.md)**
+
+## Multi-Station Configuration
+
+### Station Management in Production
+
+RadioAwa supports multiple radio stations stored in the database. Each station has:
+- Unique code (e.g., `ENGLISH`, `HINDI`)
+- Name and stream URL
+- Metadata URL (external or proxy endpoint)
+- Active status and display order
+
+### View Current Stations
+
+```bash
+psql -U radioawa -d radioawa -c "SELECT code, name, stream_url, is_active FROM stations ORDER BY display_order;"
+```
+
+### Add a New Station
+
+```sql
+INSERT INTO stations (code, name, stream_url, metadata_url, is_active, display_order, created_at, updated_at)
+VALUES (
+    'PUNJABI',
+    'RadioAwa Punjabi',
+    'https://stream.example.com/punjabi.m3u8',
+    '/api/metadata/punjabi',
+    true,
+    3,
+    NOW(),
+    NOW()
+);
+```
+
+### Update Station Stream URL
+
+```sql
+UPDATE stations
+SET stream_url = 'https://new-cdn.example.com/live.m3u8',
+    updated_at = NOW()
+WHERE code = 'ENGLISH';
+```
+
+### Disable a Station
+
+```sql
+UPDATE stations
+SET is_active = false,
+    updated_at = NOW()
+WHERE code = 'HINDI';
+```
+
+**Note**: Station changes require no code deployment - the frontend automatically fetches available stations from the API.
+
+### Default Stations
+
+| Code | Name | Stream Source | Metadata |
+|------|------|---------------|----------|
+| `ENGLISH` | RadioAwa English | CloudFront CDN | External metadata |
+| `HINDI` | RadioAwa Hindi - Vividh Bharati | All India Radio | Proxy endpoint |
 
 ## Environment Configuration
 
 ### Backend Environment Variables
 
 ```bash
-# Database
+# Database (Required)
 DATABASE_URL=jdbc:postgresql://localhost:5432/radioawa
 DB_USERNAME=radioawa
 DB_PASSWORD=secure_password_here
@@ -582,18 +584,20 @@ DB_PASSWORD=secure_password_here
 PORT=8080
 SPRING_PROFILES_ACTIVE=production
 
-# CORS
+# CORS (Configure for your domain)
 CORS_ALLOWED_ORIGINS=https://radioawa.com,https://www.radioawa.com
+
+# Rate Limiting (Optional - defaults to 20)
+RATE_LIMIT_VOTES_PER_HOUR=20
 ```
 
 ### Frontend Environment Variables
 
 ```bash
-# API
+# API Backend URL
 VITE_API_URL=https://api.radioawa.com
 
-# Stream
-VITE_STREAM_URL=https://stream.radioawa.com/live.m3u8
+# Station streams are managed in database - no frontend env vars needed
 ```
 
 ## Security Considerations

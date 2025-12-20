@@ -1,0 +1,77 @@
+# Root level .dockerignore for project
+# This file prevents unnecessary files from being sent to Docker build context
+
+# Git
+.git/
+.gitignore
+.github/
+
+# Documentation
+*.md
+ARTWORK-SETUP.md
+DEPLOYMENT.md
+DOCKER-DEPLOYMENT.md
+HINDI-STATION-SETUP.md
+IP-TRACKING-IMPLEMENTATION.md
+MULTI-STATION-FEATURE.md
+POSTMAN-GUIDE.md
+QUICKSTART.md
+README.md
+SETUP.md
+START-HERE.md
+TECHNICAL-ARCHITECTURE.md
+TESTING-FRAMEWORK.md
+
+# IDE
+.idea/
+.vscode/
+.claude/
+*.iml
+*.iws
+*.ipr
+
+# Logs and runtime files
+*.log
+*.pid
+backend.log
+frontend.log
+backend.pid
+frontend.pid
+
+# Scripts (not needed in containers)
+*.sh
+check-status.sh
+db-cli.sh
+docker-setup.sh
+start-all.sh
+stop-all.sh
+test-all.sh
+
+# Design assets
+RadioCalicoStyle.zip
+radioawaStyle/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment files (use .env.docker.* instead)
+.env
+.env.local
+.env.*.local
+.env.prod
+
+# Test files
+*.test.js
+*.spec.js
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# Build artifacts (will be built inside container)
+backend/target/
+frontend/dist/
+frontend/node_modules/

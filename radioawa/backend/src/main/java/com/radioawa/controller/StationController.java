@@ -72,7 +72,16 @@ public class StationController {
                 station.getStreamUrl(),
                 station.getMetadataUrl(),
                 station.getIsActive(),
-                station.getDisplayOrder()
+                station.getDisplayOrder(),
+                station.getStreamFormat(),
+                station.getStreamQuality(),
+                station.getStreamCodec(),
+                station.getStreamBitrate(),
+                station.getGenre(),
+                station.getTagline(),
+                station.getLogoUrl(),
+                station.getDescription(),
+                station.getSourceInfo()
         );
     }
 }

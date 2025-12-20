@@ -30,6 +30,33 @@ public class Station {
     @Column(name = "display_order")
     private Integer displayOrder = 0;
 
+    @Column(name = "stream_format", length = 100)
+    private String streamFormat;
+
+    @Column(name = "stream_quality", length = 100)
+    private String streamQuality;
+
+    @Column(name = "stream_codec", length = 50)
+    private String streamCodec;
+
+    @Column(name = "stream_bitrate", length = 50)
+    private String streamBitrate;
+
+    @Column(name = "genre", length = 100)
+    private String genre;
+
+    @Column(name = "tagline", length = 200)
+    private String tagline;
+
+    @Column(name = "logo_url", length = 500)
+    private String logoUrl;
+
+    @Column(name = "description", length = 1000)
+    private String description;
+
+    @Column(name = "source_info", length = 500)
+    private String sourceInfo;
+
     @OneToMany(mappedBy = "station", cascade = CascadeType.ALL)
     private List<Song> songs;
 
@@ -130,5 +157,77 @@ public class Station {
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getStreamFormat() {
+        return streamFormat;
+    }
+
+    public void setStreamFormat(String streamFormat) {
+        this.streamFormat = streamFormat;
+    }
+
+    public String getStreamQuality() {
+        return streamQuality;
+    }
+
+    public void setStreamQuality(String streamQuality) {
+        this.streamQuality = streamQuality;
+    }
+
+    public String getStreamCodec() {
+        return streamCodec;
+    }
+
+    public void setStreamCodec(String streamCodec) {
+        this.streamCodec = streamCodec;
+    }
+
+    public String getStreamBitrate() {
+        return streamBitrate;
+    }
+
+    public void setStreamBitrate(String streamBitrate) {
+        this.streamBitrate = streamBitrate;
+    }
+
+    public String getGenre() {
+        return genre;
+    }
+
+    public void setGenre(String genre) {
+        this.genre = genre;
+    }
+
+    public String getTagline() {
+        return tagline;
+    }
+
+    public void setTagline(String tagline) {
+        this.tagline = tagline;
+    }
+
+    public String getLogoUrl() {
+        return logoUrl;
+    }
+
+    public void setLogoUrl(String logoUrl) {
+        this.logoUrl = logoUrl;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getSourceInfo() {
+        return sourceInfo;
+    }
+
+    public void setSourceInfo(String sourceInfo) {
+        this.sourceInfo = sourceInfo;
     }
 }

@@ -1,0 +1,81 @@
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: radioawa-postgres-dev
+    environment:
+      POSTGRES_DB: ${DB_NAME:-radioawa}
+      POSTGRES_USER: ${DB_USER:-radioawa}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-radioawa_dev_password}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./backend/multi-station-migration.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - radioawa-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-radioawa}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Backend Service (Development)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: development
+    container_name: radioawa-backend-dev
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: ${DB_NAME:-radioawa}
+      DB_USER: ${DB_USER:-radioawa}
+      DB_PASSWORD: ${DB_PASSWORD:-radioawa_dev_password}
+    ports:
+      - "${BACKEND_PORT:-8081}:8081"
+    volumes:
+      # Mount source code for hot reload
+      - ./backend/src:/app/src
+      - maven-cache:/root/.m2
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - radioawa-network
+    restart: unless-stopped
+
+  # Frontend Service (Development)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: development
+    container_name: radioawa-frontend-dev
+    environment:
+      VITE_API_URL: http://localhost:${BACKEND_PORT:-8081}
+    ports:
+      - "${FRONTEND_PORT:-5171}:5171"
+    volumes:
+      # Mount source code for hot reload
+      - ./frontend/src:/app/src
+      - ./frontend/public:/app/public
+      - ./frontend/index.html:/app/index.html
+      - ./frontend/vite.config.js:/app/vite.config.js
+      # Prevent node_modules from being overwritten
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - radioawa-network
+    restart: unless-stopped
+
+networks:
+  radioawa-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+  maven-cache:

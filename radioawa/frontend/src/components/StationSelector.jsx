@@ -20,7 +20,7 @@ function StationSelector() {
           onClick={() => changeStation(station.code)}
           aria-label={`Switch to ${station.name}`}
         >
-          {station.name === 'RadioAwa Hindi' ? 'हिंदी' : 'English'}
+          {station.code === 'HINDI' ? 'हिंदी' : 'English'}
         </button>
       ))}
     </div>

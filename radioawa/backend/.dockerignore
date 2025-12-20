@@ -1,0 +1,24 @@
+# Maven build artifacts
+target/
+*.jar
+*.war
+*.ear
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.DS_Store
+
+# Logs
+*.log
+*.pid
+
+# Environment files
+.env
+.env.local
+
+# Test files
+src/test/

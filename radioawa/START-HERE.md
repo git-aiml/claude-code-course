@@ -18,9 +18,17 @@ The simplest guide to get radioawa streaming in under 2 minutes.
 http://localhost:5171
 ```
 
-### 3️⃣ Click Play
+### 3️⃣ Choose Your Station
+
+Click **English** or **हिंदी** (Hindi) button at the top
+
+### 4️⃣ Click Play
 
 Click the big play button and enjoy lossless streaming! 🎵
+
+### 5️⃣ Rate Songs
+
+Use 👍 thumbs up or 👎 thumbs down to rate songs you love or dislike!
 
 ---
 
@@ -89,9 +97,11 @@ See detailed guides:
 
 Once you open http://localhost:5171:
 
-1. **Play/Pause** - Click the large circular button
-2. **Volume** - Use the slider (0-100%)
-3. **Status** - Watch the indicator:
+1. **Switch Stations** - Click English or हिंदी buttons at the top
+2. **Play/Pause** - Click the large circular button
+3. **Volume** - Use the slider (0-100%)
+4. **Rate Songs** - Click 👍 or 👎 to rate the current song
+5. **Status** - Watch the indicator:
    - Gray = Offline
    - Mint = Ready to Play
    - Orange = Loading/Buffering
@@ -111,10 +121,16 @@ Once you open http://localhost:5171:
 
 ## 🌐 Stream Information
 
+### English Station
 - **Stream URL:** `https://d3d4yli4hf5bmh.cloudfront.net/hls/live.m3u8`
 - **Quality:** 24-bit / 48 kHz Lossless
 - **Format:** HLS (HTTP Live Streaming)
 - **Codec:** AAC
+
+### Hindi Station (हिंदी)
+- **Stream URL:** Vividh Bharati (All India Radio)
+- **Content:** Classic Hindi film music
+- **Quality:** High-quality HLS stream
 
 ---
 
@@ -146,10 +162,13 @@ Once you open http://localhost:5171:
 
 Once you have it running:
 
-1. ✅ Customize the stream URL in `frontend/src/components/RadioPlayer.jsx`
-2. ✅ Change branding colors in `frontend/src/index.css`
-3. ✅ Explore the code structure in [README.md](./README.md)
-4. ✅ Learn deployment in [DEPLOYMENT.md](./DEPLOYMENT.md)
+1. ✅ Test both English and Hindi stations
+2. ✅ Rate some songs and watch the counts update
+3. ✅ Explore the multi-station database in PostgreSQL
+4. ✅ Run the test suite: `mvn test` and `npm run test`
+5. ✅ Explore the code structure in [README.md](./README.md)
+6. ✅ Learn Docker deployment in [DOCKER-DEPLOYMENT.md](./DOCKER-DEPLOYMENT.md)
+7. ✅ Learn traditional deployment in [DEPLOYMENT.md](./DEPLOYMENT.md)
 
 ---
 

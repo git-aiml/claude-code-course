@@ -1,0 +1,160 @@
+.station-info-container {
+  background: linear-gradient(135deg, rgba(255, 232, 214, 0.4), rgba(255, 232, 214, 0.2));
+  border-radius: 12px;
+  padding: 24px;
+  margin-top: 24px;
+  border: 1px solid var(--peach);
+  box-shadow: 0 2px 8px rgba(193, 68, 14, 0.1);
+  text-align: left;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.station-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.station-logo {
+  width: 80px;
+  height: 80px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 2px solid var(--sunset-orange);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  flex-shrink: 0;
+}
+
+.station-title-group {
+  flex: 1;
+}
+
+.station-name {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--deep-orange);
+  margin: 0 0 6px 0;
+  line-height: 1.2;
+}
+
+.station-genre {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 13px;
+  color: var(--sunset-orange);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.station-tagline {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 15px;
+  font-style: italic;
+  color: var(--burnt-sienna);
+  margin: 0 0 14px 0;
+  line-height: 1.4;
+}
+
+.station-description {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 14px;
+  color: var(--burnt-sienna);
+  line-height: 1.6;
+  margin: 0 0 20px 0;
+}
+
+.station-technical-details {
+  border-top: 1px solid rgba(193, 68, 14, 0.2);
+  padding-top: 16px;
+}
+
+.detail-section {
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--deep-orange);
+  margin: 0 0 10px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  font-family: 'Open Sans', sans-serif;
+  font-size: 13px;
+}
+
+.detail-label {
+  font-weight: 600;
+  color: var(--sunset-orange);
+  min-width: 80px;
+}
+
+.detail-value {
+  color: var(--burnt-sienna);
+  text-align: right;
+  flex: 1;
+}
+
+.source-info {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(255, 243, 205, 0.5);
+  border: 1px solid #FFE69C;
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 12px;
+}
+
+.source-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.source-text {
+  font-family: 'Open Sans', sans-serif;
+  font-size: 12px;
+  color: #856404;
+  line-height: 1.5;
+  flex: 1;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .station-header {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .station-logo {
+    width: 100px;
+    height: 100px;
+  }
+
+  .station-name {
+    font-size: 18px;
+  }
+
+  .detail-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .detail-value {
+    text-align: left;
+  }
+}

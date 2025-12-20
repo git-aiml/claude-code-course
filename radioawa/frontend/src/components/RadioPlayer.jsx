@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import Hls from 'hls.js'
 import { useStation } from '../contexts/StationContext'
 import NowPlaying from './NowPlaying'
+import StationInfo from './StationInfo'
 import './RadioPlayer.css'
 
 function RadioPlayer() {
@@ -222,10 +223,7 @@ function RadioPlayer() {
 
       {isPlaying && <NowPlaying />}
 
-      <div className="stream-info">
-        <div>Stream: HLS Lossless</div>
-        <div>Format: 24-bit / 48 kHz AAC</div>
-      </div>
+      <StationInfo />
 
       {error && (
         <div className="error-message">

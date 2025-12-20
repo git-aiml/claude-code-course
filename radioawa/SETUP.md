@@ -2,6 +2,10 @@
 
 This guide provides step-by-step instructions for setting up the radioawa streaming platform on your local machine.
 
+> **💡 Quick Setup with Docker**: For a faster, hassle-free setup that doesn't require installing Java, Node.js, or PostgreSQL, see [DOCKER-DEPLOYMENT.md](./DOCKER-DEPLOYMENT.md). You can have RadioAwa running in minutes with a single command!
+>
+> This guide is for **traditional/manual setup** if you prefer to run services directly on your host machine or need to understand the detailed installation process.
+
 ## Table of Contents
 
 1. [Prerequisites](#prerequisites)
@@ -72,9 +76,34 @@ v18.x.x or higher
 - **Windows**: Download from [nodejs.org](https://nodejs.org/)
 - **All platforms**: Use [nvm](https://github.com/nvm-sh/nvm) for version management
 
-#### 4. Docker and Docker Compose (Optional)
+#### 4. PostgreSQL 16 (Required for Database Features)
 
-Required only if you want to use PostgreSQL database features.
+**Check if installed:**
+```bash
+psql --version
+brew services list | grep postgresql
+```
+
+**Expected output:**
+```
+psql (PostgreSQL) 16.x
+```
+
+**Installation (macOS):**
+```bash
+brew install postgresql@16
+brew services start postgresql@16
+```
+
+**Installation (Ubuntu/Debian):**
+```bash
+sudo apt install postgresql-16
+sudo systemctl start postgresql
+```
+
+#### 5. Docker and Docker Compose (Optional)
+
+Required only if you want to use Docker deployment.
 
 **Check if installed:**
 ```bash
@@ -172,6 +201,8 @@ This will install:
 - React 19
 - Vite 7
 - HLS.js
+- Vitest (testing framework)
+- React Testing Library
 - All other required packages
 
 **Expected output:**
@@ -181,43 +212,89 @@ added XXX packages in XXs
 
 #### Verify Package Installation
 
-Check that HLS.js was installed:
+Check that key packages were installed:
 ```bash
-npm list hls.js
+npm list hls.js vitest
 ```
 
 **Expected output:**
 ```
 radioawa-frontend@0.0.0 /path/to/radioawa/frontend
-└── hls.js@x.x.x
+├── hls.js@x.x.x
+└── vitest@x.x.x
 ```
 
-### Step 4: Set Up Database (Optional)
+### Step 4: Set Up Database
 
-If you want to use database features:
+RadioAwa requires PostgreSQL for storing stations, songs, and ratings.
 
-#### Start PostgreSQL with Docker
+#### Option A: Using Homebrew PostgreSQL (Recommended for Mac)
+
+```bash
+# Create database and user
+psql postgres
+
+# Inside psql:
+CREATE DATABASE radioawa;
+CREATE USER radioawa WITH PASSWORD 'radioawa_dev_password';
+GRANT ALL PRIVILEGES ON DATABASE radioawa TO radioawa;
+\q
+```
+
+#### Option B: Using Docker
 
 ```bash
 # From the project root
-docker compose up -d
+docker compose up -d postgres
 ```
 
 #### Verify Database is Running
 
+**Homebrew:**
 ```bash
-docker compose ps
+brew services list | grep postgresql
+# Should show: postgresql@16  started
 ```
 
-**Expected output:**
+**Docker:**
+```bash
+docker compose ps
+# Should show: radioawa-postgres   postgres:16   Up
 ```
-NAME                IMAGE            STATUS
-radioawa-postgres   postgres:16      Up
+
+#### Run Database Migrations
+
+Apply the multi-station migration script:
+
+```bash
+# Connect to database
+psql -U radioawa -d radioawa
+
+# Or with Docker:
+docker exec -it radioawa-postgres psql -U radioawa -d radioawa
+
+# Run migration script
+\i backend/multi-station-migration.sql
+
+# Verify tables created
+\dt
+
+# Exit
+\q
 ```
+
+**Expected tables:**
+- `stations` - English and Hindi radio stations
+- `songs` - Song metadata (station-scoped)
+- `ratings` - User ratings (station-scoped)
 
 #### Connect to Database (Optional)
 
 ```bash
+# Homebrew
+psql -U radioawa -d radioawa
+
+# Docker
 docker exec -it radioawa-postgres psql -U radioawa -d radioawa
 ```
 
@@ -263,13 +340,25 @@ export default defineConfig({
 })
 ```
 
-#### Change Stream URL
+#### Change Stream URLs
 
-Edit `frontend/src/components/RadioPlayer.jsx`:
+RadioAwa supports multiple stations. Stream URLs are configured in the database:
 
-```javascript
-const streamUrl = 'https://your-stream-url.com/path/to/stream.m3u8'
+**View current stations:**
+```bash
+psql -U radioawa -d radioawa -c "SELECT code, name, stream_url FROM stations;"
 ```
+
+**Update a station's stream URL:**
+```sql
+UPDATE stations
+SET stream_url = 'https://your-new-stream-url.com/live.m3u8'
+WHERE code = 'ENGLISH';
+```
+
+**Current default streams:**
+- **English**: CloudFront CDN (24-bit lossless)
+- **Hindi**: Vividh Bharati (All India Radio)
 
 ## Running the Application
 
@@ -372,19 +461,62 @@ You should see:
 4. Try adjusting the volume slider
 5. Click Play button again to pause
 
-### Step 4: Check Browser Console
+### Step 4: Test Multi-Station Features
+
+1. **Switch Stations:**
+   - Click the **हिंदी** button at the top
+   - Player should switch to Hindi station
+   - Album artwork and metadata should update
+
+2. **Test Ratings:**
+   - Click thumbs up or thumbs down on a song
+   - Rating counts should increment
+   - Try rapid clicking (should be rate-limited after 20 votes/hour)
+
+### Step 5: Check Browser Console
 
 Press `F12` to open Developer Tools, then check the Console tab.
 
 **You should see:**
 ```
 HLS manifest loaded
+Station switched to: HINDI
 ```
 
 **You should NOT see:**
 - Red error messages
 - CORS errors
 - Network errors
+
+### Step 6: Run Tests
+
+**Backend tests:**
+```bash
+cd backend
+mvn test
+```
+
+**Expected output:**
+```
+Tests run: 6, Failures: 0, Errors: 0, Skipped: 0
+```
+
+**Frontend tests:**
+```bash
+cd frontend
+npm run test
+```
+
+**Generate coverage reports:**
+```bash
+# Backend
+mvn jacoco:report
+open target/site/jacoco/index.html
+
+# Frontend
+npm run test:coverage
+open coverage/index.html
+```
 
 ## Troubleshooting
 

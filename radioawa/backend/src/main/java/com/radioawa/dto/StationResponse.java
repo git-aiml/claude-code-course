@@ -9,6 +9,15 @@ public class StationResponse {
     private String metadataUrl;
     private Boolean isActive;
     private Integer displayOrder;
+    private String streamFormat;
+    private String streamQuality;
+    private String streamCodec;
+    private String streamBitrate;
+    private String genre;
+    private String tagline;
+    private String logoUrl;
+    private String description;
+    private String sourceInfo;
 
     // Constructors
 
@@ -16,7 +25,9 @@ public class StationResponse {
     }
 
     public StationResponse(Long id, String code, String name, String streamUrl,
-                          String metadataUrl, Boolean isActive, Integer displayOrder) {
+                          String metadataUrl, Boolean isActive, Integer displayOrder,
+                          String streamFormat, String streamQuality, String streamCodec, String streamBitrate,
+                          String genre, String tagline, String logoUrl, String description, String sourceInfo) {
         this.id = id;
         this.code = code;
         this.name = name;
@@ -24,6 +35,15 @@ public class StationResponse {
         this.metadataUrl = metadataUrl;
         this.isActive = isActive;
         this.displayOrder = displayOrder;
+        this.streamFormat = streamFormat;
+        this.streamQuality = streamQuality;
+        this.streamCodec = streamCodec;
+        this.streamBitrate = streamBitrate;
+        this.genre = genre;
+        this.tagline = tagline;
+        this.logoUrl = logoUrl;
+        this.description = description;
+        this.sourceInfo = sourceInfo;
     }
 
     // Getters and Setters
@@ -82,5 +102,77 @@ public class StationResponse {
 
     public void setDisplayOrder(Integer displayOrder) {
         this.displayOrder = displayOrder;
+    }
+
+    public String getStreamFormat() {
+        return streamFormat;
+    }
+
+    public void setStreamFormat(String streamFormat) {
+        this.streamFormat = streamFormat;
+    }
+
+    public String getStreamQuality() {
+        return streamQuality;
+    }
+
+    public void setStreamQuality(String streamQuality) {
+        this.streamQuality = streamQuality;
+    }
+
+    public String getStreamCodec() {
+        return streamCodec;
+    }
+
+    public void setStreamCodec(String streamCodec) {
+        this.streamCodec = streamCodec;
+    }
+
+    public String getStreamBitrate() {
+        return streamBitrate;
+    }
+
+    public void setStreamBitrate(String streamBitrate) {
+        this.streamBitrate = streamBitrate;
+    }
+
+    public String getGenre() {
+        return genre;
+    }
+
+    public void setGenre(String genre) {
+        this.genre = genre;
+    }
+
+    public String getTagline() {
+        return tagline;
+    }
+
+    public void setTagline(String tagline) {
+        this.tagline = tagline;
+    }
+
+    public String getLogoUrl() {
+        return logoUrl;
+    }
+
+    public void setLogoUrl(String logoUrl) {
+        this.logoUrl = logoUrl;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getSourceInfo() {
+        return sourceInfo;
+    }
+
+    public void setSourceInfo(String sourceInfo) {
+        this.sourceInfo = sourceInfo;
     }
 }

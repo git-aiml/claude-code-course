@@ -37,8 +37,12 @@ Full-stack web application featuring HLS (HTTP Live Streaming) with 24-bit lossl
 
 ## Prerequisites
 
-Make sure you have the following installed:
+### For Docker Deployment (Recommended)
+- Docker Engine 20.10+ ([Install Docker](https://docs.docker.com/get-docker/))
+- Docker Compose 2.0+ (included with Docker Desktop)
+- At least 4GB RAM and 10GB disk space
 
+### For Traditional Deployment
 - Java 17 or higher
 - Maven 3.6+
 - Node.js 18+ and npm
@@ -105,15 +109,17 @@ radioawa/
 │
 ├── Documentation/                    # Markdown documentation
 │   ├── README.md                     # This file
+│   ├── DOCKER-DEPLOYMENT.md          # Docker deployment guide (comprehensive)
 │   ├── TECHNICAL-ARCHITECTURE.md     # Complete architecture guide
 │   ├── TESTING-FRAMEWORK.md          # Unit & integration testing guide
-│   ├── MULTI-STATION-FEATURE.md      # Multi-station implementation
-│   ├── HINDI-STATION-SETUP.md        # Hindi station setup guide
-│   ├── IP-TRACKING-IMPLEMENTATION.md # Rate limiting details
+│   ├── BUG-FIXES.md                  # Bug fixes documentation
+│   ├── CHANGELOG.md                  # Version history
+│   ├── HINDI-STREAM-OPTIONS.md       # Hindi radio stream sources
 │   ├── POSTMAN-GUIDE.md              # API testing guide
 │   ├── QUICKSTART.md                 # Quick start guide
+│   ├── START-HERE.md                 # New user orientation
 │   ├── SETUP.md                      # Detailed setup
-│   └── DEPLOYMENT.md                 # Production deployment
+│   └── DEPLOYMENT.md                 # Production deployment (traditional)
 │
 └── Scripts/                          # Automation scripts
     ├── start-all.sh                  # Start all services
@@ -124,7 +130,39 @@ radioawa/
 
 ## Quick Start
 
-### Using Automated Scripts (Recommended)
+Choose one of the three deployment methods:
+
+### Option 1: Docker (Recommended for Quick Setup) ⭐
+
+The fastest way to get RadioAwa running with zero configuration:
+
+**Development mode:**
+```bash
+# Copy environment file
+cp .env.docker.dev .env
+
+# Start all services
+docker compose up
+
+# Access the player at http://localhost:5171
+```
+
+**Or use the interactive setup script:**
+```bash
+./docker-setup.sh
+```
+
+**Benefits:**
+- ✅ No manual installation of Java, Node.js, or PostgreSQL
+- ✅ Consistent environment across all machines
+- ✅ Isolated from your system
+- ✅ Easy cleanup with `docker compose down`
+
+See [DOCKER-DEPLOYMENT.md](./DOCKER-DEPLOYMENT.md) for complete Docker documentation.
+
+---
+
+### Option 2: Automated Scripts (Traditional Setup)
 
 We provide convenient scripts to start and stop all services:
 
@@ -152,7 +190,7 @@ See [QUICKSTART.md](./QUICKSTART.md) for detailed script usage and manual setup 
 
 ---
 
-### Manual Setup (Alternative)
+### Option 3: Manual Setup (Alternative)
 
 If you prefer to start services manually:
 
@@ -377,8 +415,9 @@ VALUES (
 - Video codec: H.264 (for video streams)
 
 **See also:**
-- [MULTI-STATION-FEATURE.md](./MULTI-STATION-FEATURE.md) - Complete multi-station architecture
-- [HINDI-STATION-SETUP.md](./HINDI-STATION-SETUP.md) - Hindi station setup guide
+- [TECHNICAL-ARCHITECTURE.md](./TECHNICAL-ARCHITECTURE.md) - Complete multi-station architecture
+- [HINDI-STREAM-OPTIONS.md](./HINDI-STREAM-OPTIONS.md) - Hindi radio stream sources
+- [DOCKER-DEPLOYMENT.md](./DOCKER-DEPLOYMENT.md) - Docker deployment with multi-station setup
 
 ## API Endpoints
 
@@ -672,17 +711,17 @@ The radioawa player works on all modern browsers:
 
 ### Features & Implementation
 - [TECHNICAL-ARCHITECTURE.md](./TECHNICAL-ARCHITECTURE.md) - Complete system architecture
-- [MULTI-STATION-FEATURE.md](./MULTI-STATION-FEATURE.md) - Multi-station implementation guide
-- [HINDI-STATION-SETUP.md](./HINDI-STATION-SETUP.md) - Hindi station configuration
-- [IP-TRACKING-IMPLEMENTATION.md](./IP-TRACKING-IMPLEMENTATION.md) - Rate limiting and IP tracking
-- [ARTWORK-SETUP.md](./ARTWORK-SETUP.md) - Album artwork configuration
+- [BUG-FIXES.md](./BUG-FIXES.md) - Bug fixes and resolutions
+- [HINDI-STREAM-OPTIONS.md](./HINDI-STREAM-OPTIONS.md) - Hindi radio stream sources
 
-### API & Testing
+### Testing
+- [TESTING-FRAMEWORK.md](./TESTING-FRAMEWORK.md) - Complete testing guide (JUnit 5, Vitest)
 - [POSTMAN-GUIDE.md](./POSTMAN-GUIDE.md) - API testing with Postman
 - `backend/radioawa-api-collection.postman.json` - Postman collection
 
 ### Deployment
-- [DEPLOYMENT.md](./DEPLOYMENT.md) - Production deployment instructions
+- [DOCKER-DEPLOYMENT.md](./DOCKER-DEPLOYMENT.md) - Docker deployment (recommended)
+- [DEPLOYMENT.md](./DEPLOYMENT.md) - Traditional production deployment
 
 ## Current Implementation Status
 

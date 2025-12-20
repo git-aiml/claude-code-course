@@ -67,16 +67,23 @@ Navigate to:
 http://localhost:5171
 ```
 
-### Step 2: Start Streaming
+### Step 2: Select a Station
+1. You'll see two station options at the top: **English** and **हिंदी** (Hindi)
+2. Click either button to switch stations
+3. Each station has its own stream and song library
+
+### Step 3: Start Streaming
 1. You'll see the **radioawa player** with an animated logo
 2. Click the large **Play button** (circular button in center)
 3. Status will change from "Ready to Play" to **"LIVE"** (green)
 4. Audio will start playing
 
-### Step 3: Control Playback
+### Step 4: Control Playback & Rate Songs
 - **Play/Pause**: Click the center button
 - **Volume**: Adjust the slider (0-100%)
 - **Status**: Watch the status indicator (Offline/Ready/Loading/LIVE/Error)
+- **Rate Songs**: Use thumbs up/down buttons to rate the currently playing song
+- **Switch Stations**: Click English or हिंदी buttons at the top
 
 ## Application URLs
 
@@ -223,11 +230,19 @@ brew services info postgresql@16
 
 ## Stream Information
 
+### English Station
 **Stream URL:** `https://d3d4yli4hf5bmh.cloudfront.net/hls/live.m3u8`
 
 **Quality:** 24-bit / 48 kHz Lossless HLS
 
 **Format:** AAC (Advanced Audio Coding)
+
+### Hindi Station (Vividh Bharati)
+**Stream URL:** `https://air.pc.cdn.bitgravity.com/air/live/pbaudio001/playlist.m3u8`
+
+**Content:** Classic Hindi film music from All India Radio
+
+**Quality:** High-quality HLS stream
 
 **Compatibility:** All modern browsers (Chrome, Firefox, Safari, Edge)
 
@@ -320,6 +335,21 @@ npm run dev
 
 # Database (reset database)
 brew services restart postgresql@16
+```
+
+### Testing
+```bash
+# Run backend tests
+cd backend
+mvn test
+
+# Run frontend tests
+cd frontend
+npm run test
+
+# Generate coverage reports
+mvn jacoco:report          # Backend coverage
+npm run test:coverage      # Frontend coverage
 ```
 
 ## Status Indicators

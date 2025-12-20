@@ -39,8 +39,10 @@ function NowPlaying() {
       setMetadata(enrichedData)
       setError(null)
 
-      // Set album art URL from server (with cache-busting timestamp)
-      setArtworkUrl(`${albumArtUrl}?t=${Date.now()}`)
+      // Set album art URL from metadata or station config (with cache-busting timestamp)
+      // Priority: metadata.album_art > station.albumArtUrl > generic fallback
+      const artUrl = data.album_art || albumArtUrl || `https://placehold.co/300x300/FF6B35/FFF?text=${encodeURIComponent(data.album || 'Music')}`
+      setArtworkUrl(`${artUrl}?t=${Date.now()}`)
       setArtworkError(false)
     } catch (err) {
       console.error('Error fetching metadata:', err)
@@ -95,6 +97,30 @@ function NowPlaying() {
 
   return (
     <div className="now-playing">
+      {metadata.is_demo && metadata.demo_notice && (
+        <div className="demo-notice-prominent" style={{
+          backgroundColor: '#FFE5B4',
+          color: '#CC5500',
+          padding: '14px 16px',
+          borderRadius: '8px',
+          marginBottom: '16px',
+          fontSize: '14px',
+          textAlign: 'center',
+          border: '2px solid #FFB347',
+          fontWeight: '600',
+          boxShadow: '0 2px 8px rgba(204, 85, 0, 0.15)',
+          lineHeight: '1.5'
+        }}>
+          <div style={{ fontSize: '20px', marginBottom: '6px' }}>⚠️</div>
+          <div style={{ fontWeight: '700', marginBottom: '4px', fontSize: '15px' }}>
+            DEMO METADATA NOTICE
+          </div>
+          <div style={{ fontWeight: '500', fontSize: '13px' }}>
+            {metadata.demo_notice}
+          </div>
+        </div>
+      )}
+
       <div className="now-playing-header">
         <div className="pulse-dot"></div>
         <span className="now-playing-label">Now Playing</span>
