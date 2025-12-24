@@ -11,6 +11,10 @@ import java.util.*;
  * Metadata Proxy Controller
  * Provides metadata for stations that don't have their own metadata endpoints
  *
+ * NOTE: This endpoint is NO LONGER USED IN THE UI for Hindi station.
+ * The UI now displays a "Live Stream" indicator instead of simulated metadata.
+ * This endpoint is kept for API compatibility and potential future use.
+ *
  * Author: Sujit K Singh
  */
 @RestController
@@ -53,7 +57,12 @@ public class MetadataProxyController {
     /**
      * Get current metadata for Hindi station
      * Simulates a rotating playlist
+     *
+     * @deprecated This endpoint is no longer used in the UI. The frontend now displays
+     *             a "Live Stream" indicator for Hindi station instead of simulated metadata.
+     *             Kept for API compatibility.
      */
+    @Deprecated
     @GetMapping("/hindi")
     public ResponseEntity<Map<String, Object>> getHindiMetadata() {
         // Check if it's time to change to next song

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import Hls from 'hls.js'
 import { useStation } from '../contexts/StationContext'
 import NowPlaying from './NowPlaying'
+import LiveStream from './LiveStream'
 import StationInfo from './StationInfo'
 import './RadioPlayer.css'
 
@@ -221,7 +222,13 @@ function RadioPlayer() {
         <span className="volume-value">{volume}%</span>
       </div>
 
-      {isPlaying && <NowPlaying />}
+      {isPlaying && (
+        currentStation?.code === 'HINDI' ? (
+          <LiveStream />
+        ) : (
+          <NowPlaying />
+        )
+      )}
 
       <StationInfo />
 
