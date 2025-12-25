@@ -29,6 +29,7 @@ services:
     container_name: radioawa-backend-dev
     environment:
       SPRING_PROFILES_ACTIVE: dev
+      DEPLOYMENT_MODE: docker
       DB_HOST: postgres
       DB_PORT: 5432
       DB_NAME: ${DB_NAME:-radioawa}
