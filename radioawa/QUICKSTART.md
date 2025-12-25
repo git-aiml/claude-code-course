@@ -12,6 +12,35 @@ Ensure you have installed:
 
 ---
 
+## 🔧 First-Time Setup (Required)
+
+**If this is your first time running radioawa locally**, you need to initialize the database:
+
+```bash
+./setup-local-db.sh
+```
+
+This script will:
+- ✅ Create the `radioawa` database user
+- ✅ Create the `radioawa` database
+- ✅ Run database migrations (create tables, indexes)
+- ✅ Insert initial station data (English & Hindi stations)
+- ✅ Verify the setup
+
+**You only need to run this once!** After setup, use `./start-all.sh` to start the application.
+
+### When to Run Setup Script
+
+Run `./setup-local-db.sh` if:
+- This is your first time running radioawa locally
+- You get database connection errors
+- You want to reset the database to a fresh state
+- You've deleted the radioawa database
+
+**Note:** Docker users don't need this - the database is auto-configured in containers.
+
+---
+
 ## 🚀 Starting radioawa
 
 ### Option 1: Using Scripts (Recommended - Easiest!)
@@ -385,6 +414,7 @@ npm run test:coverage      # Frontend coverage
 
 | Script | Purpose |
 |--------|---------|
+| `./setup-local-db.sh` | **First-time setup**: Initialize database (run once) |
 | `./start-all.sh` | Start all services (backend, frontend, PostgreSQL) |
 | `./stop-all.sh` | Stop backend and frontend |
 | `./check-status.sh` | Check status of all services |
@@ -395,9 +425,14 @@ npm run test:coverage      # Frontend coverage
 
 ### Easiest Way (Using Scripts):
 
+**First-time setup (run once):**
+```bash
+./setup-local-db.sh
+```
+
 **Start:**
 ```bash
-./start-all.sh  # or ./start-all.sh
+./start-all.sh
 ```
 
 **Access:**
