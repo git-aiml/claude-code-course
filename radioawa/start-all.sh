@@ -18,10 +18,10 @@ if ! brew services list | grep -q "postgresql@16.*started"; then
     sleep 3
 fi
 
-# Verify PostgreSQL is accessible
-if ! /opt/homebrew/opt/postgresql@16/bin/psql -U $USER -d radioawa -c '\q' 2>/dev/null; then
-    echo -e "${RED}Error: Cannot connect to PostgreSQL database. Please check if it's running.${NC}"
-    echo -e "Try: brew services restart postgresql@16"
+# Verify PostgreSQL is accessible with correct user
+if ! PGPASSWORD=radioawa_dev_password /opt/homebrew/opt/postgresql@16/bin/psql -U radioawa -d radioawa -c '\q' 2>/dev/null; then
+    echo -e "${RED}Error: Cannot connect to PostgreSQL database 'radioawa' with user 'radioawa'.${NC}"
+    echo -e "${YELLOW}Run the setup script first: ./setup-local-db.sh${NC}"
     exit 1
 fi
 
