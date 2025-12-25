@@ -1,8 +1,13 @@
 package com.radioawa.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.radioawa.service.AlbumArtService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -11,6 +16,7 @@ import java.util.*;
 /**
  * Metadata Proxy Controller
  * Provides metadata for stations that don't have their own metadata endpoints
+ * Also enriches external metadata with album artwork from iTunes API
  *
  * Author: Sujit K Singh
  */
@@ -18,7 +24,12 @@ import java.util.*;
 @RequestMapping("/api/metadata")
 public class MetadataProxyController {
 
+    private static final Logger logger = LoggerFactory.getLogger(MetadataProxyController.class);
+    private static final String ENGLISH_METADATA_URL = "https://d3d4yli4hf5bmh.cloudfront.net/metadatav2.json";
+
     private final AlbumArtService albumArtService;
+    private final RestTemplate restTemplate;
+    private final ObjectMapper objectMapper;
 
     // Sample Hindi songs representing Vividh Bharati's classic collection
     // Note: Actual songs playing on Vividh Bharati may differ. This shows popular Hindi classics.
@@ -46,6 +57,8 @@ public class MetadataProxyController {
 
     public MetadataProxyController(AlbumArtService albumArtService) {
         this.albumArtService = albumArtService;
+        this.restTemplate = new RestTemplate();
+        this.objectMapper = new ObjectMapper();
     }
 
     private static Map<String, String> createSong(String artist, String title, String album) {
@@ -150,5 +163,48 @@ public class MetadataProxyController {
         response.put("currentSong", HINDI_SONGS.get(currentSongIndex));
         response.put("playlist", HINDI_SONGS);
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Get current metadata for English station
+     * Proxies CloudFront metadata and enriches with real album artwork from iTunes API
+     */
+    @GetMapping("/english")
+    public ResponseEntity<Map<String, Object>> getEnglishMetadata() {
+        try {
+            // Fetch metadata from CloudFront
+            logger.info("Fetching English station metadata from CloudFront");
+            String response = restTemplate.getForObject(ENGLISH_METADATA_URL, String.class);
+
+            // Parse JSON response
+            JsonNode jsonNode = objectMapper.readTree(response);
+
+            // Convert to Map
+            Map<String, Object> metadata = objectMapper.convertValue(jsonNode, Map.class);
+
+            // Extract artist and title
+            String artist = metadata.getOrDefault("artist", "Unknown Artist").toString();
+            String title = metadata.getOrDefault("title", "Unknown Track").toString();
+
+            // Fetch real album artwork from iTunes API
+            String albumArt = albumArtService.fetchAlbumArt(artist, title);
+
+            // Add album_art to metadata
+            metadata.put("album_art", albumArt);
+
+            logger.info("English metadata enriched with album art for: {} - {}", artist, title);
+            return ResponseEntity.ok(metadata);
+
+        } catch (Exception e) {
+            logger.error("Error fetching English station metadata: {}", e.getMessage());
+
+            // Return fallback metadata
+            Map<String, Object> fallback = new HashMap<>();
+            fallback.put("artist", "RadioAwa");
+            fallback.put("title", "English Station");
+            fallback.put("album", "Live Stream");
+            fallback.put("album_art", "https://dummyimage.com/300x300/FF6B35/ffffff.png?text=RadioAwa");
+            return ResponseEntity.ok(fallback);
+        }
     }
 }
