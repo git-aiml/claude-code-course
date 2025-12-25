@@ -41,7 +41,7 @@ function NowPlaying() {
 
       // Set album art URL from metadata or station config (with cache-busting timestamp)
       // Priority: metadata.album_art > station.albumArtUrl > generic fallback
-      const artUrl = data.album_art || albumArtUrl || `https://placehold.co/300x300/FF6B35/FFF?text=${encodeURIComponent(data.album || 'Music')}`
+      const artUrl = data.album_art || albumArtUrl || `https://via.placeholder.com/300x300/FF6B35/FFFFFF?text=${encodeURIComponent(data.album || 'Music')}`
       setArtworkUrl(`${artUrl}?t=${Date.now()}`)
       setArtworkError(false)
     } catch (err) {
@@ -99,24 +99,28 @@ function NowPlaying() {
     <div className="now-playing">
       {metadata.is_demo && metadata.demo_notice && (
         <div className="demo-notice-prominent" style={{
-          backgroundColor: '#FFE5B4',
-          color: '#CC5500',
-          padding: '14px 16px',
-          borderRadius: '8px',
-          marginBottom: '16px',
+          backgroundColor: '#FFF3CD',
+          color: '#856404',
+          padding: '18px 20px',
+          borderRadius: '10px',
+          marginBottom: '20px',
           fontSize: '14px',
           textAlign: 'center',
-          border: '2px solid #FFB347',
+          border: '3px solid #FFC107',
           fontWeight: '600',
-          boxShadow: '0 2px 8px rgba(204, 85, 0, 0.15)',
-          lineHeight: '1.5'
+          boxShadow: '0 4px 12px rgba(255, 193, 7, 0.3)',
+          lineHeight: '1.6',
+          animation: 'pulse-border 2s ease-in-out infinite'
         }}>
-          <div style={{ fontSize: '20px', marginBottom: '6px' }}>⚠️</div>
-          <div style={{ fontWeight: '700', marginBottom: '4px', fontSize: '15px' }}>
-            DEMO METADATA NOTICE
+          <div style={{ fontSize: '32px', marginBottom: '8px', animation: 'bounce 1s ease-in-out infinite' }}>⚠️</div>
+          <div style={{ fontWeight: '800', marginBottom: '8px', fontSize: '16px', letterSpacing: '0.5px', textTransform: 'uppercase' }}>
+            ⚡ Important: Simulated Metadata ⚡
           </div>
-          <div style={{ fontWeight: '500', fontSize: '13px' }}>
+          <div style={{ fontWeight: '600', fontSize: '14px', marginBottom: '6px', color: '#664d03' }}>
             {metadata.demo_notice}
+          </div>
+          <div style={{ fontSize: '12px', fontWeight: '500', marginTop: '8px', fontStyle: 'italic', color: '#856404' }}>
+            ℹ️ The audio stream is real, but track information shown here is for demonstration only
           </div>
         </div>
       )}
