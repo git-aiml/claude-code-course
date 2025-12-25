@@ -41,8 +41,10 @@ function NowPlaying() {
 
       // Set album art URL from metadata or station config (with cache-busting timestamp)
       // Priority: metadata.album_art > station.albumArtUrl > generic fallback
-      const artUrl = data.album_art || albumArtUrl || `https://via.placeholder.com/300x300/FF6B35/FFFFFF?text=${encodeURIComponent(data.album || 'Music')}`
-      setArtworkUrl(`${artUrl}?t=${Date.now()}`)
+      const artUrl = data.album_art || albumArtUrl || `https://dummyimage.com/300x300/FF6B35/ffffff.png?text=${encodeURIComponent(data.album || 'Music')}`
+      // Add cache-busting parameter (use & if URL already has query params, otherwise ?)
+      const cacheBuster = artUrl.includes('?') ? '&' : '?'
+      setArtworkUrl(`${artUrl}${cacheBuster}t=${Date.now()}`)
       setArtworkError(false)
     } catch (err) {
       console.error('Error fetching metadata:', err)
