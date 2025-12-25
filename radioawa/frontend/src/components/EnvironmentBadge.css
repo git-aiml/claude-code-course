@@ -1,0 +1,158 @@
+.env-badge-container {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+}
+
+.env-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  user-select: none;
+}
+
+.env-badge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.env-badge:active {
+  transform: translateY(0);
+}
+
+/* Docker badge style */
+.env-badge.docker {
+  background: linear-gradient(135deg, #2496ed 0%, #1d7fc7 100%);
+  color: white;
+}
+
+/* Local badge style */
+.env-badge.local {
+  background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+  color: white;
+}
+
+.env-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.env-label {
+  letter-spacing: 0.3px;
+}
+
+/* Details panel */
+.env-details {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  min-width: 280px;
+  overflow: hidden;
+  animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.env-details-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #f5f5f5 0%, #e8e8e8 100%);
+  border-bottom: 1px solid #ddd;
+  font-weight: 600;
+  font-size: 14px;
+  color: #333;
+}
+
+.env-details-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  color: #666;
+  padding: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.env-details-close:hover {
+  background: rgba(0, 0, 0, 0.1);
+  color: #333;
+}
+
+.env-details-content {
+  padding: 12px 16px;
+}
+
+.env-detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.env-detail-item:last-child {
+  border-bottom: none;
+}
+
+.env-detail-label {
+  font-size: 13px;
+  color: #666;
+  font-weight: 500;
+}
+
+.env-detail-value {
+  font-size: 13px;
+  color: #333;
+  font-weight: 600;
+  font-family: 'Courier New', monospace;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .env-badge-container {
+    top: 10px;
+    right: 10px;
+  }
+
+  .env-badge {
+    font-size: 12px;
+    padding: 5px 10px;
+  }
+
+  .env-icon {
+    font-size: 14px;
+  }
+
+  .env-details {
+    min-width: 240px;
+  }
+}

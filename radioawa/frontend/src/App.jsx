@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { StationProvider } from './contexts/StationContext'
 import RadioPlayer from './components/RadioPlayer'
 import StationSelector from './components/StationSelector'
+import EnvironmentBadge from './components/EnvironmentBadge'
 import './App.css'
 
 function App() {
@@ -24,6 +25,7 @@ function App() {
 
   return (
     <StationProvider>
+      <EnvironmentBadge />
       <div className="app">
         <header className="app-header">
           <div className="header-content">
