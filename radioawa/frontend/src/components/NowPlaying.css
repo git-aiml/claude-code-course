@@ -334,3 +334,24 @@
     margin-top: 6px;
   }
 }
+
+/* Animations for demo notice */
+@keyframes pulse-border {
+  0%, 100% {
+    border-color: #FFC107;
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+  }
+  50% {
+    border-color: #FFB300;
+    box-shadow: 0 4px 16px rgba(255, 193, 7, 0.5);
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}

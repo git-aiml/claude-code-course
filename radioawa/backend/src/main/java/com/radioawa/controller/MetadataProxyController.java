@@ -20,21 +20,21 @@ public class MetadataProxyController {
     // Sample Hindi songs representing Vividh Bharati's classic collection
     // Note: Actual songs playing on Vividh Bharati may differ. This shows popular Hindi classics.
     private static final List<Map<String, String>> HINDI_SONGS = Arrays.asList(
-        createSong("Arijit Singh", "Tum Hi Ho", "Aashiqui 2", "https://placehold.co/300x300/FF6B35/FFF?text=Aashiqui+2"),
-        createSong("Shreya Ghoshal", "Sunn Raha Hai", "Aashiqui 2", "https://placehold.co/300x300/FF6B35/FFF?text=Aashiqui+2"),
-        createSong("Atif Aslam", "Jeene Laga Hoon", "Ramaiya Vastavaiya", "https://placehold.co/300x300/C1440E/FFF?text=Ramaiya"),
-        createSong("Arijit Singh", "Chahun Main Ya Naa", "Aashiqui 2", "https://placehold.co/300x300/FF6B35/FFF?text=Aashiqui+2"),
-        createSong("Mohit Chauhan", "Tum Se Hi", "Jab We Met", "https://placehold.co/300x300/E74C3C/FFF?text=Jab+We+Met"),
-        createSong("Shreya Ghoshal", "Teri Meri", "Bodyguard", "https://placehold.co/300x300/9B59B6/FFF?text=Bodyguard"),
-        createSong("Arijit Singh", "Channa Mereya", "Ae Dil Hai Mushkil", "https://placehold.co/300x300/3498DB/FFF?text=Ae+Dil"),
-        createSong("Neha Kakkar", "Aankh Marey", "Simmba", "https://placehold.co/300x300/F39C12/FFF?text=Simmba"),
-        createSong("Armaan Malik", "Bol Do Na Zara", "Azhar", "https://placehold.co/300x300/1ABC9C/FFF?text=Azhar"),
-        createSong("Atif Aslam", "Pehli Nazar Mein", "Race", "https://placehold.co/300x300/E67E22/FFF?text=Race"),
-        createSong("Arijit Singh", "Ae Dil Hai Mushkil", "Ae Dil Hai Mushkil", "https://placehold.co/300x300/3498DB/FFF?text=Ae+Dil"),
-        createSong("Shreya Ghoshal", "Deewani Mastani", "Bajirao Mastani", "https://placehold.co/300x300/8E44AD/FFF?text=Bajirao"),
-        createSong("Arijit Singh", "Raabta", "Agent Vinod", "https://placehold.co/300x300/2ECC71/FFF?text=Agent+Vinod"),
-        createSong("Neha Kakkar", "Dilbar", "Satyameva Jayate", "https://placehold.co/300x300/E74C3C/FFF?text=Satyameva"),
-        createSong("Sonu Nigam", "Abhi Mujh Mein Kahin", "Agneepath", "https://placehold.co/300x300/C0392B/FFF?text=Agneepath")
+        createSong("Arijit Singh", "Tum Hi Ho", "Aashiqui 2", "https://via.placeholder.com/300x300/FF6B35/FFFFFF?text=Aashiqui+2"),
+        createSong("Shreya Ghoshal", "Sunn Raha Hai", "Aashiqui 2", "https://via.placeholder.com/300x300/FF6B35/FFFFFF?text=Aashiqui+2"),
+        createSong("Atif Aslam", "Jeene Laga Hoon", "Ramaiya Vastavaiya", "https://via.placeholder.com/300x300/C1440E/FFFFFF?text=Ramaiya"),
+        createSong("Arijit Singh", "Chahun Main Ya Naa", "Aashiqui 2", "https://via.placeholder.com/300x300/FF6B35/FFFFFF?text=Aashiqui+2"),
+        createSong("Mohit Chauhan", "Tum Se Hi", "Jab We Met", "https://via.placeholder.com/300x300/E74C3C/FFFFFF?text=Jab+We+Met"),
+        createSong("Shreya Ghoshal", "Teri Meri", "Bodyguard", "https://via.placeholder.com/300x300/9B59B6/FFFFFF?text=Bodyguard"),
+        createSong("Arijit Singh", "Channa Mereya", "Ae Dil Hai Mushkil", "https://via.placeholder.com/300x300/3498DB/FFFFFF?text=Ae+Dil"),
+        createSong("Neha Kakkar", "Aankh Marey", "Simmba", "https://via.placeholder.com/300x300/F39C12/FFFFFF?text=Simmba"),
+        createSong("Armaan Malik", "Bol Do Na Zara", "Azhar", "https://via.placeholder.com/300x300/1ABC9C/FFFFFF?text=Azhar"),
+        createSong("Atif Aslam", "Pehli Nazar Mein", "Race", "https://via.placeholder.com/300x300/E67E22/FFFFFF?text=Race"),
+        createSong("Arijit Singh", "Ae Dil Hai Mushkil", "Ae Dil Hai Mushkil", "https://via.placeholder.com/300x300/3498DB/FFFFFF?text=Ae+Dil"),
+        createSong("Shreya Ghoshal", "Deewani Mastani", "Bajirao Mastani", "https://via.placeholder.com/300x300/8E44AD/FFFFFF?text=Bajirao"),
+        createSong("Arijit Singh", "Raabta", "Agent Vinod", "https://via.placeholder.com/300x300/2ECC71/FFFFFF?text=Agent+Vinod"),
+        createSong("Neha Kakkar", "Dilbar", "Satyameva Jayate", "https://via.placeholder.com/300x300/E74C3C/FFFFFF?text=Satyameva"),
+        createSong("Sonu Nigam", "Abhi Mujh Mein Kahin", "Agneepath", "https://via.placeholder.com/300x300/C0392B/FFFFFF?text=Agneepath")
     );
 
     private int currentSongIndex = 0;
@@ -76,7 +76,7 @@ public class MetadataProxyController {
 
         // Add notice about metadata mismatch
         metadata.put("is_demo", true);
-        metadata.put("demo_notice", "This is SIMULATED metadata for demonstration. The actual Vividh Bharati live stream is playing different songs. What you see here is sample data rotating through popular Hindi classics.");
+        metadata.put("demo_notice", "⚠️ METADATA MISMATCH: Vividh Bharati is a LIVE radio stream - the actual songs playing are different from what's displayed here. This simulated metadata shows popular Hindi classics for demonstration purposes only.");
 
         // Add previous songs (recently played)
         List<Map<String, String>> queue = new ArrayList<>();
