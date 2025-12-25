@@ -20,21 +20,21 @@ public class MetadataProxyController {
     // Sample Hindi songs representing Vividh Bharati's classic collection
     // Note: Actual songs playing on Vividh Bharati may differ. This shows popular Hindi classics.
     private static final List<Map<String, String>> HINDI_SONGS = Arrays.asList(
-        createSong("Arijit Singh", "Tum Hi Ho", "Aashiqui 2", "https://via.placeholder.com/300x300/FF6B35/FFFFFF?text=Aashiqui+2"),
-        createSong("Shreya Ghoshal", "Sunn Raha Hai", "Aashiqui 2", "https://via.placeholder.com/300x300/FF6B35/FFFFFF?text=Aashiqui+2"),
-        createSong("Atif Aslam", "Jeene Laga Hoon", "Ramaiya Vastavaiya", "https://via.placeholder.com/300x300/C1440E/FFFFFF?text=Ramaiya"),
-        createSong("Arijit Singh", "Chahun Main Ya Naa", "Aashiqui 2", "https://via.placeholder.com/300x300/FF6B35/FFFFFF?text=Aashiqui+2"),
-        createSong("Mohit Chauhan", "Tum Se Hi", "Jab We Met", "https://via.placeholder.com/300x300/E74C3C/FFFFFF?text=Jab+We+Met"),
-        createSong("Shreya Ghoshal", "Teri Meri", "Bodyguard", "https://via.placeholder.com/300x300/9B59B6/FFFFFF?text=Bodyguard"),
-        createSong("Arijit Singh", "Channa Mereya", "Ae Dil Hai Mushkil", "https://via.placeholder.com/300x300/3498DB/FFFFFF?text=Ae+Dil"),
-        createSong("Neha Kakkar", "Aankh Marey", "Simmba", "https://via.placeholder.com/300x300/F39C12/FFFFFF?text=Simmba"),
-        createSong("Armaan Malik", "Bol Do Na Zara", "Azhar", "https://via.placeholder.com/300x300/1ABC9C/FFFFFF?text=Azhar"),
-        createSong("Atif Aslam", "Pehli Nazar Mein", "Race", "https://via.placeholder.com/300x300/E67E22/FFFFFF?text=Race"),
-        createSong("Arijit Singh", "Ae Dil Hai Mushkil", "Ae Dil Hai Mushkil", "https://via.placeholder.com/300x300/3498DB/FFFFFF?text=Ae+Dil"),
-        createSong("Shreya Ghoshal", "Deewani Mastani", "Bajirao Mastani", "https://via.placeholder.com/300x300/8E44AD/FFFFFF?text=Bajirao"),
-        createSong("Arijit Singh", "Raabta", "Agent Vinod", "https://via.placeholder.com/300x300/2ECC71/FFFFFF?text=Agent+Vinod"),
-        createSong("Neha Kakkar", "Dilbar", "Satyameva Jayate", "https://via.placeholder.com/300x300/E74C3C/FFFFFF?text=Satyameva"),
-        createSong("Sonu Nigam", "Abhi Mujh Mein Kahin", "Agneepath", "https://via.placeholder.com/300x300/C0392B/FFFFFF?text=Agneepath")
+        createSong("Arijit Singh", "Tum Hi Ho", "Aashiqui 2", "https://dummyimage.com/300x300/FF6B35/ffffff.png?text=Aashiqui+2"),
+        createSong("Shreya Ghoshal", "Sunn Raha Hai", "Aashiqui 2", "https://dummyimage.com/300x300/FF6B35/ffffff.png?text=Aashiqui+2"),
+        createSong("Atif Aslam", "Jeene Laga Hoon", "Ramaiya Vastavaiya", "https://dummyimage.com/300x300/C1440E/ffffff.png?text=Ramaiya"),
+        createSong("Arijit Singh", "Chahun Main Ya Naa", "Aashiqui 2", "https://dummyimage.com/300x300/FF6B35/ffffff.png?text=Aashiqui+2"),
+        createSong("Mohit Chauhan", "Tum Se Hi", "Jab We Met", "https://dummyimage.com/300x300/E74C3C/ffffff.png?text=Jab+We+Met"),
+        createSong("Shreya Ghoshal", "Teri Meri", "Bodyguard", "https://dummyimage.com/300x300/9B59B6/ffffff.png?text=Bodyguard"),
+        createSong("Arijit Singh", "Channa Mereya", "Ae Dil Hai Mushkil", "https://dummyimage.com/300x300/3498DB/ffffff.png?text=Ae+Dil"),
+        createSong("Neha Kakkar", "Aankh Marey", "Simmba", "https://dummyimage.com/300x300/F39C12/ffffff.png?text=Simmba"),
+        createSong("Armaan Malik", "Bol Do Na Zara", "Azhar", "https://dummyimage.com/300x300/1ABC9C/ffffff.png?text=Azhar"),
+        createSong("Atif Aslam", "Pehli Nazar Mein", "Race", "https://dummyimage.com/300x300/E67E22/ffffff.png?text=Race"),
+        createSong("Arijit Singh", "Ae Dil Hai Mushkil", "Ae Dil Hai Mushkil", "https://dummyimage.com/300x300/3498DB/ffffff.png?text=Ae+Dil"),
+        createSong("Shreya Ghoshal", "Deewani Mastani", "Bajirao Mastani", "https://dummyimage.com/300x300/8E44AD/ffffff.png?text=Bajirao"),
+        createSong("Arijit Singh", "Raabta", "Agent Vinod", "https://dummyimage.com/300x300/2ECC71/ffffff.png?text=Agent+Vinod"),
+        createSong("Neha Kakkar", "Dilbar", "Satyameva Jayate", "https://dummyimage.com/300x300/E74C3C/ffffff.png?text=Satyameva"),
+        createSong("Sonu Nigam", "Abhi Mujh Mein Kahin", "Agneepath", "https://dummyimage.com/300x300/C0392B/ffffff.png?text=Agneepath")
     );
 
     private int currentSongIndex = 0;
