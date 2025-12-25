@@ -1,5 +1,6 @@
 package com.radioawa.controller;
 
+import com.radioawa.service.AlbumArtService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,42 +18,47 @@ import java.util.*;
 @RequestMapping("/api/metadata")
 public class MetadataProxyController {
 
+    private final AlbumArtService albumArtService;
+
     // Sample Hindi songs representing Vividh Bharati's classic collection
     // Note: Actual songs playing on Vividh Bharati may differ. This shows popular Hindi classics.
     private static final List<Map<String, String>> HINDI_SONGS = Arrays.asList(
-        createSong("Arijit Singh", "Tum Hi Ho", "Aashiqui 2", "https://dummyimage.com/300x300/FF6B35/ffffff.png?text=Aashiqui+2"),
-        createSong("Shreya Ghoshal", "Sunn Raha Hai", "Aashiqui 2", "https://dummyimage.com/300x300/FF6B35/ffffff.png?text=Aashiqui+2"),
-        createSong("Atif Aslam", "Jeene Laga Hoon", "Ramaiya Vastavaiya", "https://dummyimage.com/300x300/C1440E/ffffff.png?text=Ramaiya"),
-        createSong("Arijit Singh", "Chahun Main Ya Naa", "Aashiqui 2", "https://dummyimage.com/300x300/FF6B35/ffffff.png?text=Aashiqui+2"),
-        createSong("Mohit Chauhan", "Tum Se Hi", "Jab We Met", "https://dummyimage.com/300x300/E74C3C/ffffff.png?text=Jab+We+Met"),
-        createSong("Shreya Ghoshal", "Teri Meri", "Bodyguard", "https://dummyimage.com/300x300/9B59B6/ffffff.png?text=Bodyguard"),
-        createSong("Arijit Singh", "Channa Mereya", "Ae Dil Hai Mushkil", "https://dummyimage.com/300x300/3498DB/ffffff.png?text=Ae+Dil"),
-        createSong("Neha Kakkar", "Aankh Marey", "Simmba", "https://dummyimage.com/300x300/F39C12/ffffff.png?text=Simmba"),
-        createSong("Armaan Malik", "Bol Do Na Zara", "Azhar", "https://dummyimage.com/300x300/1ABC9C/ffffff.png?text=Azhar"),
-        createSong("Atif Aslam", "Pehli Nazar Mein", "Race", "https://dummyimage.com/300x300/E67E22/ffffff.png?text=Race"),
-        createSong("Arijit Singh", "Ae Dil Hai Mushkil", "Ae Dil Hai Mushkil", "https://dummyimage.com/300x300/3498DB/ffffff.png?text=Ae+Dil"),
-        createSong("Shreya Ghoshal", "Deewani Mastani", "Bajirao Mastani", "https://dummyimage.com/300x300/8E44AD/ffffff.png?text=Bajirao"),
-        createSong("Arijit Singh", "Raabta", "Agent Vinod", "https://dummyimage.com/300x300/2ECC71/ffffff.png?text=Agent+Vinod"),
-        createSong("Neha Kakkar", "Dilbar", "Satyameva Jayate", "https://dummyimage.com/300x300/E74C3C/ffffff.png?text=Satyameva"),
-        createSong("Sonu Nigam", "Abhi Mujh Mein Kahin", "Agneepath", "https://dummyimage.com/300x300/C0392B/ffffff.png?text=Agneepath")
+        createSong("Arijit Singh", "Tum Hi Ho", "Aashiqui 2"),
+        createSong("Shreya Ghoshal", "Sunn Raha Hai", "Aashiqui 2"),
+        createSong("Atif Aslam", "Jeene Laga Hoon", "Ramaiya Vastavaiya"),
+        createSong("Arijit Singh", "Chahun Main Ya Naa", "Aashiqui 2"),
+        createSong("Mohit Chauhan", "Tum Se Hi", "Jab We Met"),
+        createSong("Shreya Ghoshal", "Teri Meri", "Bodyguard"),
+        createSong("Arijit Singh", "Channa Mereya", "Ae Dil Hai Mushkil"),
+        createSong("Neha Kakkar", "Aankh Marey", "Simmba"),
+        createSong("Armaan Malik", "Bol Do Na Zara", "Azhar"),
+        createSong("Atif Aslam", "Pehli Nazar Mein", "Race"),
+        createSong("Arijit Singh", "Ae Dil Hai Mushkil", "Ae Dil Hai Mushkil"),
+        createSong("Shreya Ghoshal", "Deewani Mastani", "Bajirao Mastani"),
+        createSong("Arijit Singh", "Raabta", "Agent Vinod"),
+        createSong("Neha Kakkar", "Dilbar", "Satyameva Jayate"),
+        createSong("Sonu Nigam", "Abhi Mujh Mein Kahin", "Agneepath")
     );
 
     private int currentSongIndex = 0;
     private LocalDateTime lastSongChange = LocalDateTime.now();
     private static final int SONG_DURATION_MINUTES = 4; // Average song duration
 
-    private static Map<String, String> createSong(String artist, String title, String album, String albumArt) {
+    public MetadataProxyController(AlbumArtService albumArtService) {
+        this.albumArtService = albumArtService;
+    }
+
+    private static Map<String, String> createSong(String artist, String title, String album) {
         Map<String, String> song = new HashMap<>();
         song.put("artist", artist);
         song.put("title", title);
         song.put("album", album);
-        song.put("album_art", albumArt);
         return song;
     }
 
     /**
      * Get current metadata for Hindi station
-     * Simulates a rotating playlist
+     * Simulates a rotating playlist with real album artwork from iTunes API
      */
     @GetMapping("/hindi")
     public ResponseEntity<Map<String, Object>> getHindiMetadata() {
@@ -66,12 +72,18 @@ public class MetadataProxyController {
         }
 
         Map<String, String> currentSong = HINDI_SONGS.get(currentSongIndex);
+        String artist = currentSong.get("artist");
+        String title = currentSong.get("title");
+        String album = currentSong.get("album");
+
+        // Fetch real album artwork from iTunes API
+        String albumArt = albumArtService.fetchAlbumArt(artist, title);
 
         Map<String, Object> metadata = new HashMap<>();
-        metadata.put("artist", currentSong.get("artist"));
-        metadata.put("title", currentSong.get("title"));
-        metadata.put("album", currentSong.get("album"));
-        metadata.put("album_art", currentSong.get("album_art"));
+        metadata.put("artist", artist);
+        metadata.put("title", title);
+        metadata.put("album", album);
+        metadata.put("album_art", albumArt);
         metadata.put("timestamp", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
 
         // Add notice about metadata mismatch
@@ -100,14 +112,20 @@ public class MetadataProxyController {
 
     /**
      * Get album artwork for Hindi station
-     * Returns a placeholder or redirect to actual artwork
+     * Returns real artwork from iTunes API
      */
     @GetMapping("/hindi/artwork")
     public ResponseEntity<Map<String, String>> getHindiArtwork() {
+        Map<String, String> currentSong = HINDI_SONGS.get(currentSongIndex);
+        String artist = currentSong.get("artist");
+        String title = currentSong.get("title");
+
+        String albumArt = albumArtService.fetchAlbumArt(artist, title);
+
         Map<String, String> artwork = new HashMap<>();
-        artwork.put("url", "https://via.placeholder.com/300x300.png?text=Hindi+Music");
-        artwork.put("artist", HINDI_SONGS.get(currentSongIndex).get("artist"));
-        artwork.put("title", HINDI_SONGS.get(currentSongIndex).get("title"));
+        artwork.put("url", albumArt);
+        artwork.put("artist", artist);
+        artwork.put("title", title);
         return ResponseEntity.ok(artwork);
     }
 
