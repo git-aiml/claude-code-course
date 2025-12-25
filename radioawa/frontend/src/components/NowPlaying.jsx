@@ -39,12 +39,11 @@ function NowPlaying() {
       setMetadata(enrichedData)
       setError(null)
 
-      // Set album art URL from metadata or station config (with cache-busting timestamp)
+      // Set album art URL from metadata or station config
       // Priority: metadata.album_art > station.albumArtUrl > generic fallback
       const artUrl = data.album_art || albumArtUrl || `https://dummyimage.com/300x300/FF6B35/ffffff.png?text=${encodeURIComponent(data.album || 'Music')}`
-      // Add cache-busting parameter (use & if URL already has query params, otherwise ?)
-      const cacheBuster = artUrl.includes('?') ? '&' : '?'
-      setArtworkUrl(`${artUrl}${cacheBuster}t=${Date.now()}`)
+      console.log('Setting artwork URL:', artUrl)
+      setArtworkUrl(artUrl)
       setArtworkError(false)
     } catch (err) {
       console.error('Error fetching metadata:', err)
@@ -54,9 +53,9 @@ function NowPlaying() {
     }
   }
 
-  const handleArtworkError = () => {
+  const handleArtworkError = (e) => {
+    console.error('Failed to load album artwork:', artworkUrl, e)
     setArtworkError(true)
-    console.warn('Failed to load album artwork from server')
   }
 
   useEffect(() => {
@@ -142,6 +141,7 @@ function NowPlaying() {
               src={artworkUrl}
               alt={`${metadata.album || 'Album'} artwork`}
               className="artwork-image"
+              crossOrigin="anonymous"
               onError={handleArtworkError}
             />
           ) : (
