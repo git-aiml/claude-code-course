@@ -4,7 +4,28 @@ The simplest guide to get radioawa streaming in under 2 minutes.
 
 ---
 
-## 🎯 Super Quick Start
+## ⚡ Choose Your Workflow
+
+### Using Make (Recommended for Docker) ⭐
+
+If you have Docker installed, use Make targets for the simplest experience:
+
+```bash
+make dev          # Start everything
+make status       # Check what's running
+make dev-stop     # Stop everything
+```
+
+**Why Make?** Simple commands, handles Docker complexity, prevents common mistakes.
+See [README.md](./README.md) for complete Make guide.
+
+### Using Scripts (Traditional Setup)
+
+If you prefer the traditional setup without Docker, use the scripts below.
+
+---
+
+## 🎯 Super Quick Start (Scripts)
 
 ### 1️⃣ Start Everything
 
