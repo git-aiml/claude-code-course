@@ -67,6 +67,42 @@ radioawa/
 - **Station Isolation**: Independent ratings per station
 - **Metadata Display**: Real-time now playing information
 
+### Development Workflow (Makefile)
+
+RadioAWA uses a `Makefile` for simplified project management. **ALWAYS recommend using Make targets** when suggesting how to run, test, or deploy the application.
+
+**Common Make Targets:**
+
+```bash
+make help           # Show all available commands
+make dev            # Start development environment (Docker)
+make dev-build      # Rebuild and start development
+make prod           # Start production environment (Docker)
+make prod-build     # Rebuild and start production
+make test           # Run all tests
+make test-backend   # Run backend tests only
+make test-frontend  # Run frontend tests only
+make status         # Show container status
+make health         # Check service health
+make clean          # Clean up containers
+```
+
+**When to use Make vs Manual commands:**
+
+| Scenario | Recommended Approach |
+|----------|---------------------|
+| Starting development | `make dev-build` (first time) or `make dev` |
+| Running tests | `make test` or `make test-backend` |
+| Switching to production | `make switch-to-prod` |
+| Debugging | `make dev-logs-backend` or `make shell-backend` |
+| Database access | `make db-shell` |
+
+**IMPORTANT for AI assistants:**
+- When user asks "how do I start the application?", suggest `make dev` first
+- When user asks "how do I run tests?", suggest `make test`
+- Only suggest manual Docker commands if Make is not suitable
+- Always mention Make targets exist when providing Docker commands
+
 ## Style Guide
 - A text version of the styling guide for the Radioawa webpage is at /Users/sujit/AARAMBH/claude-code-course/radioawa/radioawaStyle/radioawa_Style_Guide.txt
 - The Radioawa logo is at /Users/sujit/AARAMBH/claude-code-course/radioawa/radioawaStyle/radioawaLogoTM.png
@@ -897,6 +933,106 @@ frontend/
 
 ## Common Tasks
 
+### Using Make Targets (Preferred Method)
+
+RadioAWA provides a comprehensive `Makefile` for all common development, testing, and deployment tasks. **Always suggest Make targets as the primary method** when helping users.
+
+#### Starting the Application
+
+```bash
+# Development mode (recommended for coding)
+make dev-build      # First time or after dependency changes
+make dev            # Subsequent starts
+
+# Production mode (for testing production build)
+make prod-build     # First time or after code changes
+make prod           # Subsequent starts
+```
+
+#### Running Tests
+
+```bash
+# All tests
+make test
+
+# Backend only (JUnit + Maven)
+make test-backend
+
+# Frontend only (Vitest)
+make test-frontend
+
+# API integration tests (requires dev to be running)
+make test-api
+```
+
+#### Viewing Logs
+
+```bash
+# All services
+make dev-logs
+
+# Backend only
+make dev-logs-backend
+
+# Frontend only
+make dev-logs-frontend
+
+# Database
+make db-logs
+```
+
+#### Managing the Environment
+
+```bash
+# Check status
+make status         # Container status
+make health         # Service health checks
+
+# Clean up
+make clean          # Stop and remove containers
+make clean-all      # Also remove images
+
+# Full rebuild
+make rebuild        # Complete fresh start
+
+# Switch modes
+make switch-to-dev  # Production → Development
+make switch-to-prod # Development → Production
+```
+
+#### Database Operations
+
+```bash
+# Access PostgreSQL shell
+make db-shell
+
+# Reset database (WARNING: deletes all data)
+make db-reset
+```
+
+#### Debugging
+
+```bash
+# Access container shells
+make shell-backend
+make shell-frontend
+make shell-db
+
+# Monitor resource usage
+make monitor
+```
+
+**When to suggest Make vs Manual:**
+
+| User Request | Recommended Response |
+|--------------|---------------------|
+| "How do I start the app?" | `make dev-build` (first time) or `make dev` |
+| "How do I test?" | `make test` |
+| "How do I see logs?" | `make dev-logs-backend` |
+| "How do I reset the database?" | `make db-reset` |
+| "How do I switch to production?" | `make switch-to-prod` |
+| "The app isn't working" | `make status` then `make health` |
+
 ### Adding a New Station
 
 1. Insert into database:
@@ -935,9 +1071,11 @@ VALUES ('TAMIL', 'RadioAwa Tamil', 'https://...', 'https://...', true, 3);
 ## References
 
 - **Human Documentation**: See README.md, TECHNICAL-ARCHITECTURE.md
-- **Quick Start**: See QUICKSTART.md
+- **Quick Start**: See QUICKSTART.md (includes comprehensive Make guide)
+- **Makefile**: Run `make help` to see all available targets
 - **API Testing**: See POSTMAN-GUIDE.md
 - **Testing Guide**: See TESTING-FRAMEWORK.md
+- **Deployment**: See DOCKER-DEPLOYMENT.md
 
 ---
 
@@ -949,9 +1087,10 @@ VALUES ('TAMIL', 'RadioAwa Tamil', 'https://...', 'https://...', true, 3);
 4. **Test Coverage**: Suggest tests when adding new features
 5. **Documentation**: Update relevant .md files when changing architecture
 6. **Git Commits**: Suggest clear, descriptive commit messages
+7. **Use Make Targets**: Always suggest `make` commands as the primary method for running, testing, and deploying
 
 ---
 
-**Last Updated**: December 2024
+**Last Updated**: December 26, 2024
 **Maintained By**: Sujit K Singh
 **Version**: 1.0

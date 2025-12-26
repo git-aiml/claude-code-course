@@ -88,6 +88,274 @@ docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
 
 ---
 
+## 🎯 Make Targets - Simplified Workflow (Recommended)
+
+RadioAWA includes a `Makefile` with convenient targets for all common tasks. This is the **easiest and most reliable** way to manage development, production, and testing workflows.
+
+### Quick Start with Make
+
+```bash
+# See all available commands
+make help
+
+# Start development environment (Docker)
+make dev
+
+# Start production environment (Docker)
+make prod
+
+# Run all tests
+make test
+
+# Check status of services
+make status
+```
+
+### Development Workflow
+
+```bash
+# Start development (first time or clean start)
+make dev-build
+
+# Start development (using cached images)
+make dev
+
+# View logs in real-time
+make dev-logs
+
+# View backend logs only
+make dev-logs-backend
+
+# View frontend logs only
+make dev-logs-frontend
+
+# Restart services (without rebuild)
+make dev-restart
+
+# Stop development environment
+make dev-stop
+```
+
+**Access development:** http://localhost:5171
+
+### Production Workflow
+
+```bash
+# Build and start production
+make prod-build
+
+# Start production (using cached images)
+make prod
+
+# View production logs
+make prod-logs
+
+# Restart production services
+make prod-restart
+
+# Stop production environment
+make prod-stop
+```
+
+**Access production:** http://localhost (port 80)
+
+### Testing Commands
+
+```bash
+# Run all tests (backend + frontend)
+make test
+
+# Run backend tests only (JUnit + Maven)
+make test-backend
+
+# Run frontend tests only (Vitest)
+make test-frontend
+
+# Run API integration tests
+make test-api
+```
+
+**Note:** Tests require development environment to be running (`make dev`)
+
+### Database Management
+
+```bash
+# Connect to PostgreSQL shell
+make db-shell
+
+# View database logs
+make db-logs
+
+# Reset database (WARNING: deletes all data)
+make db-reset
+```
+
+### Utility Commands
+
+```bash
+# Check health of all services
+make health
+
+# Show container status
+make status
+
+# Clean up containers and volumes
+make clean
+
+# Clean everything including images
+make clean-all
+
+# Full rebuild from scratch
+make rebuild
+```
+
+### Advanced Commands
+
+```bash
+# Switch from production to development
+make switch-to-dev
+
+# Switch from development to production
+make switch-to-prod
+
+# Access backend container shell
+make shell-backend
+
+# Access frontend container shell
+make shell-frontend
+
+# Access database container shell
+make shell-db
+
+# Monitor resource usage
+make monitor
+```
+
+### Make vs Manual vs Scripts Comparison
+
+| Method | Best For | Pros | Cons |
+|--------|----------|------|------|
+| **Make** | Docker workflows | ✅ Simple commands<br>✅ Handles rebuilds<br>✅ Consistent across modes | Requires Docker |
+| **Scripts** | Local development | ✅ Fast startup<br>✅ No Docker needed | Manual dependency management |
+| **Manual** | Learning/debugging | ✅ Full control<br>✅ See every step | Time-consuming |
+
+### Common Make Workflows
+
+#### Daily Development
+
+```bash
+# Morning: Start work
+make dev-build          # First time of the day
+
+# During the day
+make dev-logs-backend   # Debug backend issues
+make test-backend       # Run backend tests
+
+# End of day
+make dev-stop           # Stop containers
+```
+
+#### Testing a Feature
+
+```bash
+# Start fresh environment
+make rebuild
+
+# Run all tests
+make test
+
+# Check API manually
+make test-api
+
+# View logs if something fails
+make dev-logs
+```
+
+#### Switching Modes
+
+```bash
+# Test in production mode
+make switch-to-prod
+# Test the production build...
+make prod-logs
+
+# Switch back to development
+make switch-to-dev
+```
+
+#### Debugging Issues
+
+```bash
+# Check what's running
+make status
+
+# Check service health
+make health
+
+# View logs for specific service
+make dev-logs-backend
+
+# Access container shell for debugging
+make shell-backend
+```
+
+### Make Targets Quick Reference
+
+```bash
+make help           # Show all available targets
+make dev            # Start development
+make dev-build      # Rebuild and start development
+make dev-stop       # Stop development
+make dev-logs       # Show logs
+make prod           # Start production
+make prod-build     # Rebuild and start production
+make prod-stop      # Stop production
+make test           # Run all tests
+make test-backend   # Run backend tests
+make test-frontend  # Run frontend tests
+make db-shell       # PostgreSQL shell
+make status         # Show container status
+make health         # Check service health
+make clean          # Clean up containers
+make rebuild        # Full rebuild
+```
+
+### Why Use Make?
+
+1. **Consistency**: Same commands work across all environments
+2. **Simplicity**: `make dev` vs `docker compose up -d`
+3. **Safety**: Handles rebuilds automatically when switching modes
+4. **Discoverability**: `make help` shows all available commands
+5. **Automation**: Complex workflows in single commands
+6. **Documentation**: Makefile serves as executable documentation
+
+### Troubleshooting Make
+
+**Issue:** `make: command not found`
+
+**Solution:**
+```bash
+# macOS
+xcode-select --install
+
+# Linux (Debian/Ubuntu)
+sudo apt-get install build-essential
+
+# Linux (RHEL/CentOS)
+sudo yum groupinstall "Development Tools"
+```
+
+**Issue:** Permission denied errors
+
+**Solution:**
+```bash
+# Ensure Docker is running and you have permissions
+sudo usermod -aG docker $USER
+newgrp docker
+```
+
+---
+
 ## 🔧 First-Time Setup (Required)
 
 **If this is your first time running radioawa locally**, you need to initialize the database:
