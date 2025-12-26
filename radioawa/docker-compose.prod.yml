@@ -24,6 +24,7 @@ services:
 
   # Backend Service (Production)
   backend:
+    image: radioawa-backend:prod
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -57,6 +58,7 @@ services:
 
   # Frontend Service (Production)
   frontend:
+    image: radioawa-frontend:prod
     build:
       context: ./frontend
       dockerfile: Dockerfile

@@ -59,13 +59,11 @@ dev:
 dev-build:
 	@echo "Rebuilding development environment..."
 	@docker compose down
-	@echo "Removing cached images to prevent dev/prod conflicts..."
-	@docker rmi -f radioawa-frontend radioawa-backend 2>/dev/null || true
 	@docker compose build --no-cache
 	@docker compose up -d
 	@echo "✓ Development environment rebuilt and started"
-	@echo "  Frontend: http://localhost:5171"
-	@echo "  Backend:  http://localhost:8081"
+	@echo "  Frontend: http://localhost:5171 (Vite dev server)"
+	@echo "  Backend:  http://localhost:8081 (Spring Boot dev mode)"
 
 dev-stop:
 	@echo "Stopping development environment..."
@@ -106,13 +104,11 @@ prod:
 prod-build:
 	@echo "Rebuilding production environment..."
 	@docker compose -f docker-compose.prod.yml down
-	@echo "Removing cached images to prevent dev/prod conflicts..."
-	@docker rmi -f radioawa-frontend radioawa-backend 2>/dev/null || true
 	@docker compose -f docker-compose.prod.yml build --no-cache
 	@docker compose -f docker-compose.prod.yml up -d
 	@echo "✓ Production environment rebuilt and started"
-	@echo "  Frontend: http://localhost:80"
-	@echo "  Backend:  http://localhost:8081"
+	@echo "  Frontend: http://localhost:80 (Nginx)"
+	@echo "  Backend:  http://localhost:8081 (Spring Boot production)"
 
 prod-stop:
 	@echo "Stopping production environment..."
@@ -237,21 +233,19 @@ health:
 switch-to-dev:
 	@echo "Switching from production to development..."
 	@docker compose -f docker-compose.prod.yml down
-	@echo "Removing cached images to prevent dev/prod conflicts..."
-	@docker rmi -f radioawa-frontend radioawa-backend 2>/dev/null || true
-	@docker compose build --no-cache
+	@docker compose build
 	@docker compose up -d
 	@echo "✓ Switched to development mode"
+	@echo "  Frontend: http://localhost:5171 (Vite dev server)"
 
 # Switch from development to production
 switch-to-prod:
 	@echo "Switching from development to production..."
 	@docker compose down
-	@echo "Removing cached images to prevent dev/prod conflicts..."
-	@docker rmi -f radioawa-frontend radioawa-backend 2>/dev/null || true
-	@docker compose -f docker-compose.prod.yml build --no-cache
+	@docker compose -f docker-compose.prod.yml build
 	@docker compose -f docker-compose.prod.yml up -d
 	@echo "✓ Switched to production mode"
+	@echo "  Frontend: http://localhost:80 (Nginx)"
 
 # Shell access to containers
 shell-backend:
