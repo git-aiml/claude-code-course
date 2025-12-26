@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:8081/api/stations';
+const API_BASE = '/api/stations';
 
 export async function fetchStations() {
   try {
@@ -15,7 +15,7 @@ export async function fetchStations() {
       code: 'ENGLISH',
       name: 'RadioAwa English',
       streamUrl: 'https://d3d4yli4hf5bmh.cloudfront.net/hls/live.m3u8',
-      metadataUrl: 'https://d3d4yli4hf5bmh.cloudfront.net/metadatav2.json',
+      metadataUrl: '/api/metadata/english',
       isActive: true,
       displayOrder: 1
     }];
