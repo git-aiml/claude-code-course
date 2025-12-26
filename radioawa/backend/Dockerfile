@@ -2,7 +2,7 @@
 # Supports both development and production builds
 
 # Stage 1: Build stage
-FROM maven:3.9-eclipse-temurin-17-alpine AS build
+FROM maven:3.9-eclipse-temurin-17 AS build
 WORKDIR /app
 
 # Copy pom.xml and download dependencies (cached layer)
@@ -34,7 +34,7 @@ FROM eclipse-temurin:17-jre AS production
 WORKDIR /app
 
 # Create a non-root user for security
-RUN addgroup -S radioawa && adduser -S radioawa -G radioawa
+RUN addgroup --system radioawa && adduser --system --ingroup radioawa radioawa
 
 # Copy the built jar from build stage
 COPY --from=build /app/target/*.jar app.jar
