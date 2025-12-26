@@ -597,6 +597,391 @@ Network                = Street connecting houses
 
 ---
 
+## Development vs Production: Standard Practice
+
+### Overview
+
+RadioAwa uses **multi-stage Docker builds** and **separate compose files** to provide optimized configurations for both development and production environments. This is considered **Docker best practice** and ensures:
+
+- **Fast iteration** in development with hot reload
+- **Optimized performance** in production with minimal images
+- **Same technology stack** across environments (consistency)
+- **Different optimizations** for each use case (flexibility)
+
+### Architecture Comparison
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    DEVELOPMENT MODE                             │
+├─────────────────────────────────────────────────────────────────┤
+│  Frontend: Vite Dev Server (Port 5171)                         │
+│  - Hot Module Replacement (HMR)                                 │
+│  - Source maps for debugging                                    │
+│  - NOT using nginx.conf                                         │
+│  - Image: node:20-alpine (~400MB)                              │
+│                                                                  │
+│  Backend: Spring Boot DevTools (Port 8081)                     │
+│  - Auto-reload on code changes                                  │
+│  - Debug logging enabled                                        │
+│  - Image: maven:3.9 (~800MB)                                   │
+│                                                                  │
+│  Database: PostgreSQL (Port 5432 - EXPOSED)                    │
+│  - Accessible for direct queries                                │
+│  - Sample data for testing                                      │
+└─────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────┐
+│                    PRODUCTION MODE                              │
+├─────────────────────────────────────────────────────────────────┤
+│  Frontend: Nginx (Port 80)                                      │
+│  - Serving pre-built static files                               │
+│  - Gzip compression enabled                                     │
+│  - USING nginx.conf (security headers, caching, API proxy)     │
+│  - Image: nginx:alpine (~40MB - 90% smaller!)                  │
+│                                                                  │
+│  Backend: Spring Boot JAR (Port 8081 - INTERNAL ONLY)         │
+│  - Compiled, optimized JAR                                      │
+│  - Production logging (INFO level)                              │
+│  - Image: eclipse-temurin:17-jre (~250MB - 70% smaller!)      │
+│                                                                  │
+│  Database: PostgreSQL (Port 5432 - INTERNAL ONLY)             │
+│  - Not exposed externally (security)                            │
+│  - Production data with backups                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Key Differences
+
+| Aspect | Development Mode | Production Mode |
+|--------|-----------------|-----------------|
+| **Frontend Server** | Vite dev server (localhost:5171) | Nginx (localhost:80) |
+| **Frontend Config** | `vite.config.js` | `nginx.conf` |
+| **Hot Reload** | ✅ Yes - instant code changes | ❌ No - requires rebuild |
+| **Source Maps** | ✅ Yes - for debugging | ❌ No - minified code |
+| **Image Size (Frontend)** | ~400MB (includes Node.js, npm) | ~40MB (Nginx only) |
+| **Image Size (Backend)** | ~800MB (includes Maven, JDK) | ~250MB (JRE only) |
+| **Build Time** | Fast (~30 seconds with cache) | Slower (~5 minutes initial) |
+| **Startup Time** | ~20-30 seconds | ~10 seconds (pre-compiled) |
+| **Logging Level** | DEBUG (verbose) | INFO (production-appropriate) |
+| **Database Port** | Exposed (5432) for debugging | Hidden (internal network only) |
+| **Backend Port** | Exposed (8081) for API testing | Hidden (proxied through Nginx) |
+| **CORS Config** | Permissive (localhost:5171) | Strict (production domain) |
+| **Volume Mounts** | Yes (source code mounted) | No (immutable containers) |
+| **Resource Usage** | Higher (includes build tools) | Lower (runtime only) |
+| **Security** | Relaxed (all ports open) | Hardened (minimal exposure) |
+
+### How Multi-Stage Builds Enable Both Modes
+
+The `frontend/Dockerfile` contains **multiple targets** that are selected based on the docker-compose file used:
+
+```dockerfile
+# ============================================
+# Stage 1: DEVELOPMENT
+# ============================================
+FROM node:20-alpine AS development
+WORKDIR /app
+RUN npm install -g npm@latest
+COPY package.json package-lock.json ./
+RUN npm install --legacy-peer-deps
+COPY . .
+EXPOSE 5171
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+# ↑ Used by: docker-compose.yml (target: development)
+# ↑ nginx.conf is NOT used in this stage
+
+# ============================================
+# Stage 2: BUILD (Production Compilation)
+# ============================================
+FROM node:20-alpine AS build
+WORKDIR /app
+RUN npm install -g npm@latest
+COPY package.json package-lock.json ./
+RUN npm install --legacy-peer-deps
+COPY . .
+RUN npm run build
+# ↑ Creates /app/dist with minified, optimized files
+# ↑ This stage is discarded after build (not in final image)
+
+# ============================================
+# Stage 3: PRODUCTION
+# ============================================
+FROM nginx:alpine AS production
+# Copy built static files from build stage
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# Copy custom Nginx configuration
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+# ↑ nginx.conf is ONLY used here (production stage)
+
+EXPOSE 80
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:80/health || exit 1
+CMD ["nginx", "-g", "daemon off;"]
+# ↑ Used by: docker-compose.prod.yml (target: production)
+```
+
+### Selecting the Right Mode
+
+**Development mode** is selected by `docker-compose.yml`:
+```yaml
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: development  # ← Selects development stage
+```
+
+**Production mode** is selected by `docker-compose.prod.yml`:
+```yaml
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: production  # ← Selects production stage
+```
+
+### Standard Development Workflow
+
+#### Daily Development (Recommended Approach)
+
+```bash
+# 1. Start development stack
+docker compose up
+
+# 2. Access application
+# - Frontend: http://localhost:5171 (Vite dev server)
+# - Backend API: http://localhost:8081
+# - Database: localhost:5432
+
+# 3. Edit code in your IDE
+# - Frontend changes: Instant hot reload (HMR)
+# - Backend changes: Auto-reload (~3-5 seconds)
+
+# 4. View logs
+docker compose logs -f
+
+# 5. Stop when done
+docker compose down
+```
+
+**Why this works:**
+- Source code is **mounted as volumes** from host → container
+- Vite watches for file changes and applies HMR
+- Spring Boot DevTools detects changes and recompiles
+- **nginx.conf is NOT loaded** (Vite handles everything)
+
+#### Alternative: Run Without Docker (Local Development)
+
+```bash
+# Terminal 1: Frontend
+cd frontend
+npm install
+npm run dev
+# Runs on http://localhost:5171
+
+# Terminal 2: Backend
+cd backend
+mvn spring-boot:run
+# Runs on http://localhost:8081
+
+# Terminal 3: Database (still use Docker)
+docker run -d -p 5432:5432 \
+  -e POSTGRES_DB=radioawa \
+  -e POSTGRES_USER=radioawa \
+  -e POSTGRES_PASSWORD=radioawa_dev_password \
+  --name radioawa-db \
+  postgres:16-alpine
+```
+
+**When to use this:**
+- Faster startup (no container overhead)
+- IDE debugging tools work natively
+- Easier to attach debuggers
+
+### Standard Production Workflow
+
+#### Pre-Deployment Testing (Test Prod Build Locally)
+
+```bash
+# 1. Build production images
+docker compose -f docker-compose.prod.yml build
+
+# 2. Test with development credentials (safer)
+docker compose -f docker-compose.prod.yml --env-file .env.docker.dev up
+
+# 3. Access production build
+open http://localhost
+
+# 4. Verify production features:
+# - Check DevTools Network tab (files should be minified: main-abc123.js)
+# - Verify health check: curl http://localhost/health
+# - Test API proxy: curl http://localhost/api/stations
+# - Confirm no CORS errors (same origin via Nginx)
+# - Check response headers for security headers
+
+# 5. Stop test deployment
+docker compose -f docker-compose.prod.yml down
+```
+
+#### Production Deployment
+
+```bash
+# On production server:
+
+# 1. Configure production environment
+cp .env.docker.prod .env.prod
+nano .env.prod
+# CHANGE:
+# - DB_PASSWORD (strong password!)
+# - CORS_ALLOWED_ORIGINS (https://yourdomain.com)
+
+# 2. Build optimized images
+docker compose -f docker-compose.prod.yml build --no-cache
+
+# 3. Start production stack
+docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
+
+# 4. Verify deployment
+docker compose -f docker-compose.prod.yml ps
+# All services should show "Up (healthy)"
+
+# 5. Monitor logs
+docker compose -f docker-compose.prod.yml logs -f
+
+# 6. Set up automated backups (see section below)
+```
+
+### Best Practices Summary
+
+#### ✅ DO
+
+1. **Use development mode for daily work**
+   - Fast iteration with hot reload
+   - Full debugging capabilities
+   - All ports accessible for testing
+
+2. **Test production builds locally before deploying**
+   - Catches build issues early
+   - Verifies Nginx configuration
+   - Tests minified/optimized code
+
+3. **Keep separate environment files**
+   - `.env.docker.dev` for development
+   - `.env.docker.prod` for production
+   - Never commit `.env.prod` to git
+
+4. **Use docker-compose.yml for dev, docker-compose.prod.yml for production**
+   - Clear separation of concerns
+   - Prevents accidental production deployment with dev config
+
+5. **Mount source code only in development**
+   - Enables hot reload
+   - Keep production containers immutable
+
+#### ❌ DON'T
+
+1. **Don't use production mode for development**
+   - No hot reload (slow iteration)
+   - Requires full rebuild for every change
+   - Harder to debug (no source maps)
+
+2. **Don't use development mode in production**
+   - Larger images (wasted resources)
+   - Security risk (source code exposed)
+   - Slower performance (dev server overhead)
+
+3. **Don't mix configurations**
+   - Don't use Nginx in development
+   - Don't use Vite dev server in production
+   - Don't expose database port in production
+
+4. **Don't skip testing production builds**
+   - Always test prod build locally first
+   - Catches configuration issues early
+   - Verifies nginx.conf is working
+
+### Verifying Your Current Mode
+
+```bash
+# Check which mode is running
+docker compose ps
+
+# Development mode shows:
+# - radioawa-frontend-dev (port 5171)
+# - Command: npm run dev
+
+# Production mode shows:
+# - radioawa-frontend-prod (port 80)
+# - Command: nginx -g daemon off;
+```
+
+### Nginx Configuration in Production Only
+
+The `nginx.conf` file provides production-specific features:
+
+**Features ONLY in Production:**
+- ✅ **API Reverse Proxy**: `/api/*` → `http://backend:8081`
+- ✅ **Security Headers**: X-Frame-Options, X-Content-Type-Options, etc.
+- ✅ **Gzip Compression**: Optimizes response sizes
+- ✅ **Static Asset Caching**: 1-year cache for JS/CSS/images
+- ✅ **SPA Routing**: All routes serve `index.html`
+- ✅ **Health Check Endpoint**: `/health` for monitoring
+
+**NOT Used in Development:**
+- ❌ Vite dev server handles all routing
+- ❌ Vite proxy handles API requests
+- ❌ No caching needed (development)
+- ❌ No compression needed (local)
+
+### Quick Reference Commands
+
+| Task | Command |
+|------|---------|
+| **Start development** | `docker compose up` |
+| **Start development (background)** | `docker compose up -d` |
+| **Stop development** | `docker compose down` |
+| **View dev logs** | `docker compose logs -f` |
+| **Restart dev service** | `docker compose restart frontend` |
+| **Build production images** | `docker compose -f docker-compose.prod.yml build` |
+| **Test production locally** | `docker compose -f docker-compose.prod.yml up` |
+| **Deploy to production** | `docker compose -f docker-compose.prod.yml --env-file .env.prod up -d` |
+| **View production logs** | `docker compose -f docker-compose.prod.yml logs -f` |
+| **Stop production** | `docker compose -f docker-compose.prod.yml down` |
+| **Check which mode running** | `docker compose ps` |
+
+### Troubleshooting Mode Confusion
+
+**Problem:** "I changed code but don't see changes"
+
+**Solution:**
+```bash
+# Check if you're in production mode by mistake
+docker compose ps
+
+# If it shows nginx on port 80, you're in production mode
+# Stop production, start development:
+docker compose -f docker-compose.prod.yml down
+docker compose up
+```
+
+**Problem:** "nginx.conf changes not working in development"
+
+**Solution:**
+- nginx.conf is **only used in production mode**
+- Development uses Vite dev server (configured in `vite.config.js`)
+- To test nginx.conf, use: `docker compose -f docker-compose.prod.yml up`
+
+**Problem:** "Production build is slow"
+
+**Solution:**
+- This is expected! Production builds are optimized for runtime, not build time
+- Use development mode for daily work
+- Only build production when deploying or testing prod features
+
+---
+
 ## Development Deployment
 
 ### Quick Start (Fastest Method)
@@ -1248,11 +1633,11 @@ RUN npm run build
 # Purpose: Serve static files with Nginx
 FROM nginx:alpine AS production
 COPY --from=build /app/dist /usr/share/nginx/html
-# Custom nginx config for SPA routing
-RUN echo 'server { ... }' > /etc/nginx/conf.d/default.conf
+# Copy custom nginx configuration file
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 CMD ["nginx", "-g", "daemon off;"]
 # Image size: ~40MB (90% reduction!)
-# Features: Highly optimized Nginx, gzip, caching
+# Features: Highly optimized Nginx, gzip, caching, API proxy, security headers
 ```
 
 **Key Insights:**
@@ -2219,9 +2604,21 @@ For typical cloud instance (4 cores, SSD):
 pool_size = (4 * 2) + 1 = 9-20 connections
 ```
 
+### Nginx Configuration
+
+The production frontend uses a custom Nginx configuration file (`frontend/nginx.conf`) that provides:
+- **SPA Routing**: Serves index.html for all routes
+- **API Proxy**: Forwards `/api` requests to backend service
+- **Security Headers**: X-Frame-Options, X-Content-Type-Options, etc.
+- **Gzip Compression**: Optimizes text-based responses
+- **Static Asset Caching**: Aggressive caching for JS/CSS/images
+- **Health Check Endpoint**: `/health` for monitoring
+
+The configuration is automatically applied during the Docker build process.
+
 ### Nginx Caching
 
-Add to `frontend/Dockerfile`:
+The `nginx.conf` file includes optimized caching settings:
 ```nginx
 server {
     location /static/ {
