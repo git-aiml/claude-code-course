@@ -128,13 +128,139 @@ radioawa/
     └── db-cli.sh                     # Database CLI tool
 ```
 
+## Why Use Make Targets? (Recommended Approach)
+
+RadioAWA includes a comprehensive `Makefile` that simplifies all development, testing, and deployment workflows. **This is the recommended way to work with the project.**
+
+### The Problem Without Make
+
+Without Make, developers need to remember and type complex commands:
+```bash
+# Long Docker Compose commands
+docker compose up -d
+docker compose -f docker-compose.prod.yml build
+docker compose logs -f backend
+docker compose exec backend mvn test
+
+# Easy to make mistakes
+docker compose up    # Forgot -d, terminal blocked
+docker-compose up    # Wrong command (old syntax)
+```
+
+### The Solution With Make
+
+Make provides simple, memorable commands that handle complexity for you:
+```bash
+make dev            # Start development environment
+make prod-build     # Build and start production
+make test           # Run all tests
+make dev-logs       # View logs
+```
+
+### Why Developers Should Use Make Targets
+
+1. **Simplicity**: Type `make dev` instead of `docker compose up -d`
+   - Shorter commands = fewer typos
+   - No need to remember flags like `-d`, `-f`, `--build`
+
+2. **Consistency**: Same commands work for everyone
+   - New team member? Just `make dev`
+   - CI/CD pipeline? Same `make test`
+   - Works identically on Mac, Linux, Windows
+
+3. **Safety**: Built-in safeguards
+   - `make prod-build` automatically rebuilds images (prevents stale cache bugs)
+   - `make db-reset` asks for confirmation before deleting data
+   - `make switch-to-dev` handles the full transition safely
+
+4. **Discoverability**: Self-documenting
+   - Forgot a command? Just type `make help`
+   - See all available targets with descriptions
+   - No need to search through documentation
+
+5. **Productivity**: One command does multiple steps
+   - `make rebuild` = stop containers + clean volumes + rebuild + start
+   - `make test` = run backend tests + frontend tests + show results
+   - `make switch-to-prod` = stop dev + build prod + start prod
+
+6. **Debugging Made Easy**:
+   ```bash
+   make status         # What's running?
+   make health         # Are services healthy?
+   make dev-logs-backend  # Show backend logs
+   make shell-backend  # Jump into container for debugging
+   ```
+
+### Quick Comparison
+
+| Task | Without Make | With Make |
+|------|-------------|-----------|
+| Start development | `docker compose up -d` | `make dev` |
+| View backend logs | `docker compose logs -f backend` | `make dev-logs-backend` |
+| Run tests | `docker compose exec backend mvn test && docker compose exec frontend npm test` | `make test` |
+| Switch to production | `docker compose down && docker compose -f docker-compose.prod.yml build && docker compose -f docker-compose.prod.yml up -d` | `make switch-to-prod` |
+| Database shell | `docker compose exec postgres psql -U radioawa -d radioawa` | `make db-shell` |
+
+### Available Make Targets
+
+View all available targets anytime:
+```bash
+make help
+```
+
+**Most Common Commands:**
+- `make dev` - Start development environment
+- `make dev-build` - Rebuild and start development (first time or after changes)
+- `make test` - Run all tests
+- `make status` - Check what's running
+- `make health` - Health check all services
+- `make clean` - Stop everything and clean up
+
+**See [QUICKSTART.md](./QUICKSTART.md) for complete Make guide with examples.**
+
+---
+
 ## Quick Start
 
-Choose one of the three deployment methods:
+Choose one of the deployment methods:
 
-### Option 1: Docker (Recommended for Quick Setup) ⭐
+### Option 1: Make Targets (Recommended) ⭐
 
-The fastest way to get RadioAwa running with zero configuration:
+The simplest and most reliable way to work with RadioAwa:
+
+**Development mode:**
+```bash
+# First time setup
+make dev-build
+
+# Subsequent starts
+make dev
+
+# Access the player at http://localhost:5171
+```
+
+**Common tasks:**
+```bash
+make test              # Run all tests
+make dev-logs-backend  # View backend logs
+make health            # Check all services
+make help              # See all available commands
+```
+
+**Benefits:**
+- ✅ Simple, memorable commands (`make dev`, `make test`)
+- ✅ Handles Docker complexity automatically
+- ✅ Built-in safety checks and confirmations
+- ✅ Self-documenting with `make help`
+- ✅ Prevents common mistakes (cached images, wrong modes)
+
+See [QUICKSTART.md](./QUICKSTART.md) for complete Make guide with workflow examples.
+
+---
+
+### Option 2: Docker Compose (Manual)
+
+If you prefer direct Docker Compose commands:
 
 **Development mode:**
 ```bash
@@ -142,27 +268,22 @@ The fastest way to get RadioAwa running with zero configuration:
 cp .env.docker.dev .env
 
 # Start all services
-docker compose up
+docker compose up -d
 
 # Access the player at http://localhost:5171
-```
-
-**Or use the interactive setup script:**
-```bash
-./docker-setup.sh
 ```
 
 **Benefits:**
 - ✅ No manual installation of Java, Node.js, or PostgreSQL
 - ✅ Consistent environment across all machines
 - ✅ Isolated from your system
-- ✅ Easy cleanup with `docker compose down`
+- ✅ Full control over Docker commands
 
 See [DOCKER-DEPLOYMENT.md](./DOCKER-DEPLOYMENT.md) for complete Docker documentation.
 
 ---
 
-### Option 2: Automated Scripts (Traditional Setup)
+### Option 3: Automated Scripts (Traditional Setup)
 
 We provide convenient scripts to start and stop all services:
 
@@ -190,7 +311,7 @@ See [QUICKSTART.md](./QUICKSTART.md) for detailed script usage and manual setup 
 
 ---
 
-### Option 3: Manual Setup (Alternative)
+### Option 4: Manual Setup (Alternative)
 
 If you prefer to start services manually:
 
