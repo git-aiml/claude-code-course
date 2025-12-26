@@ -760,6 +760,141 @@ Optional<Song> findByArtistAndTitle(
 
 ---
 
+## Deployment Modes: Development vs Production
+
+### Overview
+
+RadioAwa uses **multi-stage Docker builds** with separate configurations for development and production. This is a **standard practice** that must be maintained.
+
+### Key Principle
+
+- **Development mode**: Optimized for fast iteration with hot reload
+- **Production mode**: Optimized for performance and security
+
+**NEVER mix these modes!**
+
+### Frontend Server Configuration
+
+| Mode | Server | Config File | Port | Hot Reload |
+|------|--------|-------------|------|------------|
+| **Development** | Vite dev server | `vite.config.js` | 5171 | ✅ Yes |
+| **Production** | Nginx | `nginx.conf` | 80 | ❌ No |
+
+**IMPORTANT**: `nginx.conf` is **ONLY** used in production. Development uses Vite.
+
+### Docker Compose Files
+
+```yaml
+# docker-compose.yml (DEVELOPMENT)
+services:
+  frontend:
+    build:
+      target: development  # Uses Vite dev server
+    ports:
+      - "5171:5171"
+    volumes:
+      - ./frontend/src:/app/src  # Hot reload enabled
+
+# docker-compose.prod.yml (PRODUCTION)
+services:
+  frontend:
+    build:
+      target: production  # Uses Nginx
+    ports:
+      - "80:80"
+    # No volume mounts (immutable container)
+```
+
+### Standard Commands
+
+```bash
+# Development (daily work)
+docker compose up
+
+# Production (deployment)
+docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
+```
+
+### When Making Frontend Changes
+
+#### Modifying Components/Code
+
+```bash
+# 1. Use development mode
+docker compose up
+
+# 2. Edit files in frontend/src/
+# Changes appear instantly (HMR)
+
+# 3. Test production build before deploying
+docker compose -f docker-compose.prod.yml build
+docker compose -f docker-compose.prod.yml up
+```
+
+#### Modifying Nginx Configuration
+
+```bash
+# 1. Edit frontend/nginx.conf
+
+# 2. Test in production mode ONLY
+docker compose -f docker-compose.prod.yml build
+docker compose -f docker-compose.prod.yml up
+
+# nginx.conf changes have NO EFFECT in development mode!
+```
+
+### Rules for AI Assistants
+
+1. **NEVER suggest using Nginx in development**
+   - Development uses Vite dev server
+   - Hot reload requires Vite, not Nginx
+
+2. **NEVER suggest using Vite dev server in production**
+   - Production must use pre-built static files
+   - Nginx provides security, caching, and API proxying
+
+3. **When adding frontend features:**
+   - Test in development mode first (fast iteration)
+   - Then test production build before deploying
+   - Verify both modes work correctly
+
+4. **When modifying nginx.conf:**
+   - Only affects production mode
+   - Must rebuild production images to test
+   - Document what changed and why
+
+5. **When troubleshooting:**
+   - First ask: "Which mode is running?"
+   - Check with: `docker compose ps`
+   - Different modes have different behaviors
+
+### File Organization
+
+```
+frontend/
+├── Dockerfile           # Multi-stage (dev + prod)
+├── vite.config.js       # Development server config
+├── nginx.conf           # Production server config
+├── src/                 # Source code (mounted in dev)
+└── dist/                # Production build (created by npm run build)
+```
+
+### Common Mistakes to Avoid
+
+❌ **DON'T**:
+- Use `nginx.conf` in development
+- Expect hot reload in production mode
+- Mix dev and prod environment variables
+- Deploy without testing production build locally
+
+✅ **DO**:
+- Use Vite for development
+- Use Nginx for production
+- Test production builds locally first
+- Keep separate `.env` files
+
+---
+
 ## Common Tasks
 
 ### Adding a New Station

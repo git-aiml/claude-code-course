@@ -12,6 +12,82 @@ Ensure you have installed:
 
 ---
 
+## ⚙️ Two Deployment Modes
+
+RadioAWA supports two deployment modes with different purposes:
+
+### 🛠️ Development Mode (Local Development)
+
+**Purpose:** Daily development work with fast iteration
+
+**Features:**
+- ✅ **Hot Reload**: Code changes appear instantly
+- ✅ **Vite Dev Server**: Frontend on port 5171
+- ✅ **Debug Logging**: Verbose output for troubleshooting
+- ✅ **Source Maps**: Easy debugging in browser
+- ✅ **All Ports Exposed**: Easy API testing
+
+**Start Command:**
+```bash
+# Docker method
+docker compose up
+
+# OR Manual method (this guide)
+./start-all.sh
+```
+
+**Access:** http://localhost:5171
+
+---
+
+### 🚀 Production Mode (Deployment)
+
+**Purpose:** Optimized deployment to servers
+
+**Features:**
+- ✅ **Nginx Web Server**: Serves optimized static files on port 80
+- ✅ **Minified Code**: 90% smaller than development
+- ✅ **Security Headers**: X-Frame-Options, CSP, etc.
+- ✅ **Gzip Compression**: Faster page loads
+- ✅ **API Reverse Proxy**: Backend hidden behind Nginx
+- ✅ **Immutable Containers**: No code changes without rebuild
+
+**Start Command:**
+```bash
+docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
+```
+
+**Access:** http://localhost (port 80)
+
+---
+
+### 📋 Key Differences Summary
+
+| Aspect | Development Mode | Production Mode |
+|--------|------------------|-----------------|
+| **Frontend Server** | Vite (port 5171) | Nginx (port 80) |
+| **Config File** | `vite.config.js` | `nginx.conf` |
+| **Hot Reload** | ✅ Yes | ❌ No |
+| **Image Size** | ~400MB | ~40MB |
+| **Startup Time** | 20-30s | ~10s |
+| **Security** | Relaxed | Hardened |
+
+### 🎯 Which Mode to Use?
+
+**Use Development Mode when:**
+- Coding and testing locally
+- Making frequent code changes
+- Debugging issues
+- Following this quickstart guide
+
+**Use Production Mode when:**
+- Deploying to a server
+- Testing production build locally
+- Performance testing
+- See [DOCKER-DEPLOYMENT.md](./DOCKER-DEPLOYMENT.md) for details
+
+---
+
 ## 🔧 First-Time Setup (Required)
 
 **If this is your first time running radioawa locally**, you need to initialize the database:
