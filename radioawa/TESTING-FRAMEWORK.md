@@ -706,7 +706,37 @@ E2E Tests: 5%
 
 ## Running Tests
 
-### Backend
+### Using Make Targets (Docker - Recommended) ⭐
+
+If you're using Docker, the easiest way to run tests is with Make targets:
+
+```bash
+# Run all tests (backend + frontend)
+make test
+
+# Run backend tests only
+make test-backend
+
+# Run frontend tests only
+make test-frontend
+
+# Run API integration tests (requires dev environment running)
+make test-api
+```
+
+**Benefits:**
+- ✅ Works regardless of local environment
+- ✅ Tests run in same environment as production
+- ✅ No need to install Java, Node.js, or dependencies locally
+- ✅ Simple, memorable commands
+
+**See [README.md](./README.md#why-use-make-targets-recommended-approach) for more on why Make is recommended.**
+
+---
+
+### Manual Testing (Without Docker)
+
+#### Backend
 
 ```bash
 # Run all tests
@@ -726,7 +756,7 @@ mvn test jacoco:report
 open target/site/jacoco/index.html
 ```
 
-### Frontend
+#### Frontend
 
 ```bash
 # Run all tests

@@ -986,14 +986,48 @@ docker compose up
 
 ### Quick Start (Fastest Method)
 
-#### Option 1: Interactive Setup Script
+#### Option 1: Make Targets (Recommended) ⭐
+
+The simplest and most reliable way to manage development:
+
+```bash
+# First time or after dependency changes
+make dev-build
+
+# Subsequent starts
+make dev
+
+# View logs
+make dev-logs
+
+# View backend logs only
+make dev-logs-backend
+
+# Stop services
+make dev-stop
+```
+
+**Why Use Make?**
+- ✅ Simple, memorable commands
+- ✅ Handles Docker complexity automatically
+- ✅ Prevents common mistakes (stale images, wrong modes)
+- ✅ Built-in safety checks
+- ✅ Self-documenting with `make help`
+
+**See [QUICKSTART.md](./QUICKSTART.md) for complete Make guide.**
+
+---
+
+#### Option 2: Interactive Setup Script
+
 ```bash
 ./docker-setup.sh
 # Select: 1) Development
 # Script handles everything automatically
 ```
 
-#### Option 2: Manual Setup
+#### Option 3: Docker Compose (Manual)
+
 ```bash
 # Step 1: Copy environment file
 cp .env.docker.dev .env
@@ -1006,7 +1040,8 @@ docker compose up
 # Backend API: http://localhost:8081
 ```
 
-#### Option 3: Background Mode (Detached)
+#### Option 4: Background Mode (Detached)
+
 ```bash
 docker compose up -d
 # Services run in background
@@ -1245,7 +1280,41 @@ Before deploying to production, complete this checklist:
 
 ### Production Setup Steps
 
-#### 1. Copy and Configure Environment
+#### Option 1: Make Targets (Recommended) ⭐
+
+The simplest way to build and deploy production:
+
+```bash
+# Build and start production
+make prod-build
+
+# Or just start (if already built)
+make prod
+
+# View logs
+make prod-logs
+
+# Check health
+make health
+
+# Stop production
+make prod-stop
+```
+
+**Benefits:**
+- ✅ Handles all Docker Compose complexity
+- ✅ Automatically rebuilds images (prevents stale cache)
+- ✅ Uses correct production configuration
+- ✅ Built-in health checks
+
+**Note:** You still need to configure `.env.prod` manually (see below for details).
+
+---
+
+#### Option 2: Manual Docker Compose
+
+##### 1. Copy and Configure Environment
+
 ```bash
 # Copy template
 cp .env.docker.prod .env.prod
@@ -1269,7 +1338,8 @@ FRONTEND_PORT=80
 BACKEND_PORT=8081
 ```
 
-#### 2. Build Production Images
+##### 2. Build Production Images
+
 ```bash
 docker compose -f docker-compose.prod.yml build --no-cache
 
@@ -1280,7 +1350,8 @@ docker compose -f docker-compose.prod.yml build --no-cache
 # Time: ~5-10 minutes
 ```
 
-#### 3. Start Production Services
+##### 3. Start Production Services
+
 ```bash
 docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
 
@@ -1290,7 +1361,8 @@ docker compose -f docker-compose.prod.yml --env-file .env.prod up -d
 # 3. Frontend (starts independently)
 ```
 
-#### 4. Verify Deployment
+##### 4. Verify Deployment
+
 ```bash
 # Check all services running
 docker compose -f docker-compose.prod.yml ps
@@ -1302,7 +1374,8 @@ docker compose -f docker-compose.prod.yml ps
 # radioawa-frontend-prod     Up (healthy)
 ```
 
-#### 5. Test Health Endpoints
+##### 5. Test Health Endpoints
+
 ```bash
 # Backend health check
 curl http://localhost:8081/actuator/health

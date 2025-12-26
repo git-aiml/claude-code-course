@@ -2,9 +2,11 @@
 
 This guide provides step-by-step instructions for setting up the radioawa streaming platform on your local machine.
 
-> **💡 Quick Setup with Docker**: For a faster, hassle-free setup that doesn't require installing Java, Node.js, or PostgreSQL, see [DOCKER-DEPLOYMENT.md](./DOCKER-DEPLOYMENT.md). You can have RadioAwa running in minutes with a single command!
+> **⭐ Recommended: Quick Setup with Make + Docker**: The easiest way to get started is using Make targets with Docker. Just run `make dev-build` and you're done! No manual installation of Java, Node.js, or PostgreSQL required. See [README.md](./README.md#why-use-make-targets-recommended-approach) for why Make is recommended.
 >
-> This guide is for **traditional/manual setup** if you prefer to run services directly on your host machine or need to understand the detailed installation process.
+> **💡 Alternative: Docker without Make**: For Docker setup with manual commands, see [DOCKER-DEPLOYMENT.md](./DOCKER-DEPLOYMENT.md).
+>
+> This guide is for **traditional/manual setup** if you prefer to run services directly on your host machine without Docker or need to understand the detailed installation process.
 
 ## Table of Contents
 
