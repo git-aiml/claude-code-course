@@ -49,7 +49,7 @@ jobs:
 
       - name: Run backend tests
         run: |
-          cd radioaw./radioawa/backend
+          cd radioawa/backend
           mvn clean test
         env:
           SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/radioawa_test
@@ -58,14 +58,14 @@ jobs:
 
       - name: Generate coverage report
         run: |
-          cd radioaw./radioawa/backend
+          cd radioawa/backend
           mvn jacoco:report
         if: always()
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
-          files: ./radioawa/radioawa/backend/target/site/jacoco/jacoco.xml
+          files: ./radioawa/backend/target/site/jacoco/jacoco.xml
           flags: backend
           fail_ci_if_error: false
         if: always()
@@ -108,26 +108,26 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd radioaw./radioawa/frontend
+          cd radioawa/frontend
           npm ci
 
       - name: Run frontend tests
         run: |
-          cd radioaw./radioawa/frontend
+          cd radioawa/frontend
           npm run test
         env:
           CI: true
 
       - name: Generate coverage report
         run: |
-          cd radioaw./radioawa/frontend
+          cd radioawa/frontend
           npm run test:coverage
         if: always()
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
-          files: ./radioawa/radioawa/frontend/coverage/coverage-final.json
+          files: ./radioawa/frontend/coverage/coverage-final.json
           flags: frontend-node-${{ matrix.node-version }}
           fail_ci_if_error: false
         if: always()
@@ -157,12 +157,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd radioaw./radioawa/frontend
+          cd radioawa/frontend
           npm ci
 
       - name: Run ESLint
         run: |
-          cd radioaw./radioawa/frontend
+          cd radioawa/frontend
           npm run lint
         continue-on-error: true
 
@@ -237,12 +237,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd radioaw./radioawa/frontend
+          cd radioawa/frontend
           npm ci
 
       - name: Run npm audit
         run: |
-          cd radioaw./radioawa/frontend
+          cd radioawa/frontend
           npm audit --audit-level=high --json > npm-audit-report.json || true
           npm audit --audit-level=high
         continue-on-error: true
@@ -282,7 +282,7 @@ jobs:
           name: frontend-security-report
           path: |
             trivy-frontend-deps.sarif
-            radioawa/frontend/npm-audit-report.json
+            frontend/npm-audit-report.json
           retention-days: 30
 
   security-docker:
@@ -508,21 +508,16 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const body = `## ❌ CI/CD Pipeline Failed
-
-Some checks did not pass. Please review the [workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.
-
-**Failed Checks:**
-- Review the Quality Gate job for specific failures
-- Fix any test failures
-- Address security vulnerabilities
-- Resolve linting issues
-
-Once fixed, push new commits to re-trigger the checks.`;
-
             github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: body
+              body: '## ❌ CI/CD Pipeline Failed\n\n' +
+                    'Some checks did not pass. Please review the workflow run for details.\n\n' +
+                    '**Failed Checks:**\n' +
+                    '- Review the Quality Gate job for specific failures\n' +
+                    '- Fix any test failures\n' +
+                    '- Address security vulnerabilities\n' +
+                    '- Resolve linting issues\n\n' +
+                    'Once fixed, push new commits to re-trigger the checks.'
             });
