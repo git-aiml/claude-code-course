@@ -1,0 +1,528 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:  # Allow manual trigger
+
+# Limit concurrent runs
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ============================================================================
+  # TESTING JOBS
+  # ============================================================================
+
+  backend-tests:
+    name: Backend Tests (Java 17)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: radioawa_test
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Run backend tests
+        run: |
+          cd backend
+          mvn clean test
+        env:
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/radioawa_test
+          SPRING_DATASOURCE_USERNAME: test
+          SPRING_DATASOURCE_PASSWORD: test
+
+      - name: Generate coverage report
+        run: |
+          cd backend
+          mvn jacoco:report
+        if: always()
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./backend/target/site/jacoco/jacoco.xml
+          flags: backend
+          fail_ci_if_error: false
+        if: always()
+
+      - name: Archive test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-results
+          path: backend/target/surefire-reports/
+          retention-days: 30
+        if: always()
+
+      - name: Archive coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage-report
+          path: backend/target/site/jacoco/
+          retention-days: 30
+        if: always()
+
+  frontend-tests:
+    name: Frontend Tests (Node ${{ matrix.node-version }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+      fail-fast: false
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Run frontend tests
+        run: |
+          cd frontend
+          npm run test
+        env:
+          CI: true
+
+      - name: Generate coverage report
+        run: |
+          cd frontend
+          npm run test:coverage
+        if: always()
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./frontend/coverage/coverage-final.json
+          flags: frontend-node-${{ matrix.node-version }}
+          fail_ci_if_error: false
+        if: always()
+
+      - name: Archive test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-test-results-node-${{ matrix.node-version }}
+          path: frontend/coverage/
+          retention-days: 30
+        if: always()
+
+  lint:
+    name: Code Linting
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Run ESLint
+        run: |
+          cd frontend
+          npm run lint
+        continue-on-error: true
+
+  # ============================================================================
+  # SECURITY SCANNING JOBS
+  # ============================================================================
+
+  security-backend:
+    name: Security Scan - Backend
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner (Maven)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: './backend'
+          scanners: 'vuln'
+          format: 'sarif'
+          output: 'trivy-backend-deps.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+          exit-code: '0'
+
+      - name: Upload Trivy results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-backend-deps.sarif'
+          category: 'backend-dependencies'
+
+      - name: Run Trivy (fail on critical/high)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: './backend'
+          scanners: 'vuln'
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+
+      - name: Archive vulnerability report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-security-report
+          path: trivy-backend-deps.sarif
+          retention-days: 30
+
+  security-frontend:
+    name: Security Scan - Frontend
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd frontend
+          npm ci
+
+      - name: Run npm audit
+        run: |
+          cd frontend
+          npm audit --audit-level=high --json > npm-audit-report.json || true
+          npm audit --audit-level=high
+        continue-on-error: true
+
+      - name: Run Trivy vulnerability scanner (npm)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: './frontend'
+          scanners: 'vuln'
+          format: 'sarif'
+          output: 'trivy-frontend-deps.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+          exit-code: '0'
+
+      - name: Upload Trivy results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-frontend-deps.sarif'
+          category: 'frontend-dependencies'
+
+      - name: Run Trivy (fail on critical/high)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: './frontend'
+          scanners: 'vuln'
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+
+      - name: Archive vulnerability reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: frontend-security-report
+          path: |
+            trivy-frontend-deps.sarif
+            frontend/npm-audit-report.json
+          retention-days: 30
+
+  security-docker:
+    name: Security Scan - Docker Images
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+
+    strategy:
+      matrix:
+        image:
+          - name: backend
+            dockerfile: ./backend/Dockerfile
+            context: ./backend
+          - name: frontend
+            dockerfile: ./frontend/Dockerfile
+            context: ./frontend
+      fail-fast: false
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ matrix.image.context }}
+          file: ${{ matrix.image.dockerfile }}
+          push: false
+          load: true
+          tags: radioawa-${{ matrix.image.name }}:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run Trivy vulnerability scanner (Docker)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: radioawa-${{ matrix.image.name }}:ci
+          format: 'sarif'
+          output: 'trivy-${{ matrix.image.name }}-image.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+          exit-code: '0'
+
+      - name: Upload Trivy results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-${{ matrix.image.name }}-image.sarif'
+          category: '${{ matrix.image.name }}-docker-image'
+
+      - name: Run Trivy (fail on critical/high)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: radioawa-${{ matrix.image.name }}:ci
+          format: 'table'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+
+      - name: Archive vulnerability report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ${{ matrix.image.name }}-docker-security-report
+          path: trivy-${{ matrix.image.name }}-image.sarif
+          retention-days: 30
+
+  security-secrets:
+    name: Security Scan - Secret Detection
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for better secret detection
+
+      - name: Run Trivy secret scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          scanners: 'secret'
+          format: 'sarif'
+          output: 'trivy-secrets.sarif'
+          exit-code: '0'
+
+      - name: Upload Trivy results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-secrets.sarif'
+          category: 'secrets'
+
+      - name: Run Trivy secret scanner (fail on secrets)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          scanners: 'secret'
+          format: 'table'
+          exit-code: '1'
+
+      - name: Archive secret scan report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: secret-scan-report
+          path: trivy-secrets.sarif
+          retention-days: 30
+
+  # ============================================================================
+  # QUALITY GATE
+  # ============================================================================
+
+  quality-gate:
+    name: Quality Gate
+    runs-on: ubuntu-latest
+    needs:
+      - backend-tests
+      - frontend-tests
+      - lint
+      - security-backend
+      - security-frontend
+      - security-docker
+      - security-secrets
+    if: always()
+
+    steps:
+      - name: Check results
+        run: |
+          echo "CI/CD Pipeline Results"
+          echo "======================"
+          echo ""
+          echo "Testing:"
+          echo "  Backend Tests: ${{ needs.backend-tests.result }}"
+          echo "  Frontend Tests: ${{ needs.frontend-tests.result }}"
+          echo "  Linting: ${{ needs.lint.result }}"
+          echo ""
+          echo "Security:"
+          echo "  Backend Security: ${{ needs.security-backend.result }}"
+          echo "  Frontend Security: ${{ needs.security-frontend.result }}"
+          echo "  Docker Security: ${{ needs.security-docker.result }}"
+          echo "  Secret Detection: ${{ needs.security-secrets.result }}"
+          echo ""
+
+      - name: Determine status
+        run: |
+          # Check tests
+          if [[ "${{ needs.backend-tests.result }}" != "success" ]]; then
+            echo "❌ Backend tests failed"
+            exit 1
+          fi
+
+          if [[ "${{ needs.frontend-tests.result }}" != "success" ]]; then
+            echo "❌ Frontend tests failed"
+            exit 1
+          fi
+
+          # Check security
+          if [[ "${{ needs.security-backend.result }}" != "success" ]]; then
+            echo "❌ Backend security scan failed"
+            exit 1
+          fi
+
+          if [[ "${{ needs.security-frontend.result }}" != "success" ]]; then
+            echo "❌ Frontend security scan failed"
+            exit 1
+          fi
+
+          if [[ "${{ needs.security-docker.result }}" != "success" ]]; then
+            echo "❌ Docker security scan failed"
+            exit 1
+          fi
+
+          if [[ "${{ needs.security-secrets.result }}" != "success" ]]; then
+            echo "🚨 SECRETS DETECTED - Review immediately!"
+            exit 1
+          fi
+
+          echo "✅ All checks passed!"
+
+  # ============================================================================
+  # SUMMARY
+  # ============================================================================
+
+  summary:
+    name: CI/CD Summary
+    runs-on: ubuntu-latest
+    needs: [quality-gate]
+    if: always()
+    permissions:
+      pull-requests: write
+
+    steps:
+      - name: Generate summary
+        run: |
+          echo "# 🔍 CI/CD Pipeline Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [[ "${{ needs.quality-gate.result }}" == "success" ]]; then
+            echo "✅ **All checks passed!**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "- Tests: Passing" >> $GITHUB_STEP_SUMMARY
+            echo "- Security: Clean" >> $GITHUB_STEP_SUMMARY
+            echo "- Linting: Passing" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Some checks failed**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Please review the workflow logs for details." >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request' && needs.quality-gate.result != 'success'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = `## ❌ CI/CD Pipeline Failed
+
+Some checks did not pass. Please review the [workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.
+
+**Failed Checks:**
+- Review the Quality Gate job for specific failures
+- Fix any test failures
+- Address security vulnerabilities
+- Resolve linting issues
+
+Once fixed, push new commits to re-trigger the checks.`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
