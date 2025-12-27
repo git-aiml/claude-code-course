@@ -1,7 +1,7 @@
 # RadioAWA Makefile
 # Quick commands for development, production, and testing workflows
 
-.PHONY: help dev prod test clean logs status rebuild
+.PHONY: help dev prod test clean logs status rebuild security-scan security-backend security-frontend security-docker security-secrets security-install check-trivy
 
 # Default target - show help
 help:
@@ -28,6 +28,14 @@ help:
 	@echo "  make test-backend     - Run backend tests only (JUnit + Maven)"
 	@echo "  make test-frontend    - Run frontend tests only (Vitest)"
 	@echo "  make test-api         - Run API integration tests (requires running dev)"
+	@echo ""
+	@echo "Security Commands:"
+	@echo "  make security-scan    - Run all security scans (dependencies + docker + secrets)"
+	@echo "  make security-backend - Scan backend dependencies for vulnerabilities"
+	@echo "  make security-frontend- Scan frontend dependencies for vulnerabilities"
+	@echo "  make security-docker  - Scan Docker images for vulnerabilities"
+	@echo "  make security-secrets - Scan for exposed secrets in code"
+	@echo "  make security-install - Install Trivy security scanner"
 	@echo ""
 	@echo "Database Commands:"
 	@echo "  make db-shell         - Connect to PostgreSQL shell"
@@ -160,6 +168,91 @@ test-api:
 		-d '{"artist":"Test Artist","title":"Test Song","userId":"test-'$$(date +%s)'","ratingType":"THUMBS_UP","stationCode":"ENGLISH"}' | jq .
 	@echo ""
 	@echo "✓ API integration tests completed"
+
+# ============================================================================
+# SECURITY COMMANDS
+# ============================================================================
+
+# Check if Trivy is installed
+check-trivy:
+	@command -v trivy >/dev/null 2>&1 || { \
+		echo "❌ Trivy is not installed"; \
+		echo ""; \
+		echo "Install Trivy:"; \
+		echo "  macOS:   brew install aquasecurity/trivy/trivy"; \
+		echo "  Linux:   wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add - && \\"; \
+		echo "           echo 'deb https://aquasecurity.github.io/trivy-repo/deb $$(lsb_release -sc) main' | sudo tee -a /etc/apt/sources.list.d/trivy.list && \\"; \
+		echo "           sudo apt-get update && sudo apt-get install trivy"; \
+		echo "  Or run:  make security-install"; \
+		echo ""; \
+		exit 1; \
+	}
+
+security-install:
+	@echo "Installing Trivy security scanner..."
+	@if [[ "$$(uname)" == "Darwin" ]]; then \
+		if command -v brew >/dev/null 2>&1; then \
+			brew install aquasecurity/trivy/trivy; \
+		else \
+			echo "❌ Homebrew not found. Please install from https://brew.sh"; \
+			exit 1; \
+		fi \
+	elif [[ "$$(uname)" == "Linux" ]]; then \
+		wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add - && \
+		echo "deb https://aquasecurity.github.io/trivy-repo/deb $$(lsb_release -sc) main" | sudo tee -a /etc/apt/sources.list.d/trivy.list && \
+		sudo apt-get update && \
+		sudo apt-get install -y trivy; \
+	else \
+		echo "❌ Unsupported OS. Please install Trivy manually from https://github.com/aquasecurity/trivy"; \
+		exit 1; \
+	fi
+	@echo "✓ Trivy installed successfully"
+
+security-scan: check-trivy
+	@echo "Running comprehensive security scans..."
+	@echo ""
+	@$(MAKE) security-backend
+	@echo ""
+	@$(MAKE) security-frontend
+	@echo ""
+	@$(MAKE) security-docker
+	@echo ""
+	@$(MAKE) security-secrets
+	@echo ""
+	@echo "✓ All security scans completed"
+
+security-backend: check-trivy
+	@echo "Scanning backend dependencies for vulnerabilities..."
+	@trivy fs --scanners vuln --severity HIGH,CRITICAL ./backend
+	@echo "✓ Backend dependency scan completed"
+
+security-frontend: check-trivy
+	@echo "Scanning frontend dependencies for vulnerabilities..."
+	@echo ""
+	@echo "Running npm audit..."
+	@cd frontend && npm audit --audit-level=moderate || true
+	@echo ""
+	@echo "Running Trivy scan..."
+	@trivy fs --scanners vuln --severity HIGH,CRITICAL ./frontend
+	@echo "✓ Frontend dependency scan completed"
+
+security-docker: check-trivy
+	@echo "Scanning Docker images for vulnerabilities..."
+	@echo ""
+	@echo "Building Docker images for scanning..."
+	@docker compose build --quiet
+	@echo ""
+	@echo "Scanning backend Docker image..."
+	@trivy image --severity HIGH,CRITICAL radioawa-backend:dev || true
+	@echo ""
+	@echo "Scanning frontend Docker image..."
+	@trivy image --severity HIGH,CRITICAL radioawa-frontend:dev || true
+	@echo "✓ Docker image scan completed"
+
+security-secrets: check-trivy
+	@echo "Scanning for exposed secrets..."
+	@trivy fs --scanners secret --severity HIGH,CRITICAL .
+	@echo "✓ Secret scan completed"
 
 # ============================================================================
 # DATABASE COMMANDS
