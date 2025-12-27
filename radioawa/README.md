@@ -493,6 +493,91 @@ open coverage/index.html
 
 For detailed testing documentation, see [TESTING-FRAMEWORK.md](./TESTING-FRAMEWORK.md)
 
+## Security
+
+RadioAWA implements comprehensive security scanning to protect against vulnerabilities in dependencies, containers, and code.
+
+### Security Stack
+
+- **Trivy** - All-in-one vulnerability scanner
+  - Backend dependency scanning (Maven)
+  - Frontend dependency scanning (npm)
+  - Docker image scanning
+  - Secret detection
+- **Dependabot** - Automated dependency updates
+- **npm audit** - Built-in npm vulnerability checking
+- **GitHub Actions** - Automated CI/CD security checks
+
+### Running Security Scans
+
+**Prerequisites**: Install Trivy
+
+```bash
+# macOS
+make security-install
+# or
+brew install aquasecurity/trivy/trivy
+
+# Linux
+make security-install
+```
+
+**Run all scans**:
+
+```bash
+make security-scan
+```
+
+This runs:
+1. Backend dependency scan
+2. Frontend dependency scan
+3. Docker image scan
+4. Secret detection scan
+
+**Individual scans**:
+
+```bash
+make security-backend   # Backend dependencies only
+make security-frontend  # Frontend dependencies only
+make security-docker    # Docker images only
+make security-secrets   # Secret detection only
+```
+
+### Automated Security Checks
+
+Security scans run automatically on:
+- ✅ Every pull request
+- ✅ Push to main/develop branches
+- ✅ Daily at 2 AM UTC (scheduled)
+
+Results are uploaded to the **GitHub Security** tab and displayed in PR comments.
+
+**Enforcement Policy**:
+- ❌ CRITICAL/HIGH vulnerabilities block PR merges
+- ⚠️ MEDIUM vulnerabilities generate warnings
+- ✅ LOW vulnerabilities are informational
+
+### Dependency Updates
+
+Dependabot automatically creates PRs for:
+- Maven dependencies (backend)
+- npm dependencies (frontend)
+- GitHub Actions
+- Docker base images
+
+**Update Schedule**: Weekly on Mondays at 9 AM UTC
+
+### Security Resources
+
+For comprehensive security documentation, including:
+- Why security scanning is important
+- Tools evaluation and selection rationale
+- Vulnerability disclosure process
+- Security best practices
+- Known limitations and future enhancements
+
+See **[SECURITY.md](./SECURITY.md)**
+
 ## Multi-Station Configuration
 
 radioawa supports multiple radio stations with independent streams and metadata.
@@ -839,6 +924,14 @@ The radioawa player works on all modern browsers:
 - [TESTING-FRAMEWORK.md](./TESTING-FRAMEWORK.md) - Complete testing guide (JUnit 5, Vitest)
 - [POSTMAN-GUIDE.md](./POSTMAN-GUIDE.md) - API testing with Postman
 - `backend/radioawa-api-collection.postman.json` - Postman collection
+
+### Security
+- [SECURITY.md](./SECURITY.md) - Security scanning guide (Trivy, Dependabot)
+  - Why security scanning is important
+  - Tools evaluation and selection
+  - Running security scans locally
+  - Automated security checks
+  - Vulnerability disclosure process
 
 ### Deployment
 - [DOCKER-DEPLOYMENT.md](./DOCKER-DEPLOYMENT.md) - Docker deployment (recommended)
