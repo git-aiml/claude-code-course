@@ -17,9 +17,10 @@
 6. [Database Guidelines](#database-guidelines)
 7. [API Design Patterns](#api-design-patterns)
 8. [Testing Requirements](#testing-requirements)
-9. [Security Considerations](#security-considerations)
-10. [What NOT to Do](#what-not-to-do)
-11. [Common Tasks](#common-tasks)
+9. [CI/CD Pipeline](#cicd-pipeline)
+10. [Security Considerations](#security-considerations)
+11. [What NOT to Do](#what-not-to-do)
+12. [Common Tasks](#common-tasks)
 
 ---
 
@@ -674,6 +675,146 @@ describe('SongRating', () => {
 - Use `screen.getByRole()` and `screen.getByLabelText()`
 - Mock API calls
 - Test loading and error states
+
+---
+
+## CI/CD Pipeline
+
+RadioAWA uses GitHub Actions for continuous integration and deployment. Understanding the pipeline is essential when making code changes.
+
+### Pipeline Location
+
+**File**: `.github/workflows/ci.yml` (at repository root, NOT in `radioawa/.github/workflows/`)
+
+**Why repository root?**: The `radioawa` directory is a subdirectory within the `claude-code-course` repository, so GitHub Actions workflows must be at the repository root.
+
+### Path Conventions
+
+All paths in the CI/CD workflow include the `radioawa/` prefix since the source code is in a subdirectory:
+
+```yaml
+# CORRECT (in CI/CD workflow)
+- run: cd radioawa/backend && mvn clean test
+- path: radioawa/backend/target/surefire-reports/
+
+# INCORRECT (would fail in CI)
+- run: cd backend && mvn clean test
+- path: backend/target/surefire-reports/
+```
+
+### When Pipeline Runs
+
+- **Automatically**: On every push to `main` or `develop` branches
+- **Automatically**: On every pull request to `main` or `develop`
+- **Manually**: Via GitHub Actions UI (workflow_dispatch)
+
+### Pipeline Jobs
+
+**Testing Jobs** (run in parallel):
+1. **backend-tests**: JUnit tests with PostgreSQL service container
+2. **frontend-tests**: Vitest tests on Node 18.x and 20.x (matrix)
+3. **lint**: ESLint code quality checks
+
+**Security Jobs** (run in parallel):
+1. **security-backend**: Trivy scan for Maven dependencies
+2. **security-frontend**: npm audit + Trivy scan for npm dependencies
+3. **security-docker**: Trivy scan for Docker images (backend + frontend)
+4. **security-secrets**: Trivy secret detection across codebase
+
+**Quality Gate**:
+- Depends on ALL test and security jobs
+- Enforces that all checks must pass
+- Blocks PR merge if any job fails
+
+### Important Rules for AI Assistants
+
+1. **Never suggest modifying the workflow file** without explicit user request
+   - The pipeline is production-critical
+   - Changes require careful review
+
+2. **When code changes fail CI/CD**:
+   ```bash
+   # Help user debug by suggesting:
+   gh run view <run-id> --log-failed
+
+   # Then guide them to run tests locally:
+   make test
+   make security-scan
+   ```
+
+3. **When adding new dependencies**:
+   - Remind user that CI/CD will run security scans
+   - Suggest running `make security-backend` or `make security-frontend` locally first
+
+4. **When creating pull requests**:
+   - Mention that CI/CD will run automatically
+   - Recommend running `make test` locally before pushing
+
+5. **Path awareness**:
+   - Remember that workflow runs from repository root
+   - All radioawa-specific paths need `radioawa/` prefix in workflow files
+   - Local commands (via Make) don't need the prefix
+
+### Common CI/CD Issues
+
+| Issue | Cause | Solution |
+|-------|-------|----------|
+| "Tests failed" | Code broke existing tests | Run `make test` locally to debug |
+| "Security scan blocked" | CRITICAL/HIGH vulnerability | Update dependency in `pom.xml` or `package.json` |
+| "Secret detected" | Hardcoded credential in code | Remove secret, use environment variables |
+| "Path not found" | Missing `radioawa/` prefix in workflow | Update workflow path references |
+
+### Integration with Make Targets
+
+| CI/CD Job | Equivalent Local Command |
+|-----------|-------------------------|
+| backend-tests | `make test-backend` |
+| frontend-tests | `make test-frontend` |
+| security-backend | `make security-backend` |
+| security-frontend | `make security-frontend` |
+| security-docker | `make security-docker` |
+| security-secrets | `make security-secrets` |
+
+**Note**: Local commands run in Docker containers, while CI runs directly on GitHub Actions runners.
+
+### Workflow File Structure
+
+```yaml
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true  # Cancels old runs for same branch
+
+jobs:
+  # Testing jobs (parallel)
+  backend-tests: ...
+  frontend-tests: ...
+  lint: ...
+
+  # Security jobs (parallel)
+  security-backend: ...
+  security-frontend: ...
+  security-docker: ...
+  security-secrets: ...
+
+  # Quality gate (depends on all above)
+  quality-gate:
+    needs: [backend-tests, frontend-tests, ...]
+```
+
+### For Complete Documentation
+
+Refer users to [CI-CD.md](./CI-CD.md) for:
+- Detailed pipeline architecture
+- Troubleshooting guide
+- Developer workflow best practices
+- Security vulnerability handling
 
 ---
 

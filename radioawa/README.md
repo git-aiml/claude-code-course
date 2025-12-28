@@ -493,6 +493,66 @@ open coverage/index.html
 
 For detailed testing documentation, see [TESTING-FRAMEWORK.md](./TESTING-FRAMEWORK.md)
 
+## CI/CD Pipeline
+
+RadioAWA uses **GitHub Actions** for continuous integration and continuous deployment. Every push and pull request automatically triggers comprehensive testing and security scanning.
+
+### What Gets Tested Automatically
+
+✅ **Backend Tests** - JUnit tests with PostgreSQL (Java 17)
+✅ **Frontend Tests** - Vitest tests on Node 18.x and 20.x
+✅ **Code Linting** - ESLint for code quality
+✅ **Security Scans** - Trivy vulnerability scanning (dependencies + Docker images)
+✅ **Secret Detection** - Prevents accidental credential commits
+
+### Pipeline Location
+
+`.github/workflows/ci.yml` (at repository root)
+
+### When It Runs
+
+- Automatically on every push to `main` or `develop`
+- Automatically on every pull request
+- Manually via GitHub Actions UI
+
+### Viewing Results
+
+```bash
+# List recent workflow runs
+gh run list --limit 10
+
+# View specific run
+gh run view <run-id>
+
+# View failed logs
+gh run view <run-id> --log-failed
+```
+
+### Quality Gate
+
+All checks must pass before a PR can be merged:
+- ✅ All tests passing
+- ✅ No CRITICAL/HIGH security vulnerabilities
+- ✅ Code linting passes
+- ✅ No secrets detected in code
+
+### Developer Workflow
+
+```bash
+# 1. Run tests locally before pushing
+make test
+
+# 2. Push your changes
+git push
+
+# 3. CI/CD pipeline runs automatically
+# 4. Fix any failures and push again
+
+# 5. Once green, PR is ready to merge
+```
+
+**📘 For complete CI/CD documentation, troubleshooting, and best practices, see [CI-CD.md](./CI-CD.md)**
+
 ## Security
 
 RadioAWA implements comprehensive security scanning to protect against vulnerabilities in dependencies, containers, and code.
@@ -920,8 +980,14 @@ The radioawa player works on all modern browsers:
 - [BUG-FIXES.md](./BUG-FIXES.md) - Bug fixes and resolutions
 - [HINDI-STREAM-OPTIONS.md](./HINDI-STREAM-OPTIONS.md) - Hindi radio stream sources
 
-### Testing
+### Testing & CI/CD
 - [TESTING-FRAMEWORK.md](./TESTING-FRAMEWORK.md) - Complete testing guide (JUnit 5, Vitest)
+- [CI-CD.md](./CI-CD.md) - Continuous Integration/Deployment pipeline guide
+  - Pipeline architecture and jobs
+  - When and how pipeline runs
+  - Understanding and fixing failures
+  - Security scanning integration
+  - Developer workflow and best practices
 - [POSTMAN-GUIDE.md](./POSTMAN-GUIDE.md) - API testing with Postman
 - `backend/radioawa-api-collection.postman.json` - Postman collection
 
@@ -960,8 +1026,8 @@ The radioawa player works on all modern browsers:
 - [ ] HTTPS/TLS implementation
 - [ ] Authentication and authorization (OAuth 2.0/JWT)
 - [ ] API rate limiting middleware
-- [ ] Comprehensive unit and integration tests
-- [ ] CI/CD pipeline (GitHub Actions)
+- [x] Comprehensive unit and integration tests
+- [x] CI/CD pipeline (GitHub Actions) ✅ **COMPLETED**
 - [ ] Monitoring and observability (Prometheus/Grafana)
 
 ### Phase 2: Scalability
