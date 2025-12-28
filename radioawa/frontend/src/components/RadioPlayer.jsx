@@ -10,7 +10,7 @@ function RadioPlayer() {
   const audioRef = useRef(null)
   const hlsRef = useRef(null)
   const [isPlaying, setIsPlaying] = useState(false)
-  const [volume, setVolume] = useState(70)
+  const [volume, setVolume] = useState(100)
   const [status, setStatus] = useState('offline')
   const [error, setError] = useState('')
 

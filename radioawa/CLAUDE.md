@@ -680,7 +680,22 @@ describe('SongRating', () => {
 
 ## CI/CD Pipeline
 
-RadioAWA uses GitHub Actions for continuous integration and deployment. Understanding the pipeline is essential when making code changes.
+RadioAWA uses **GitHub Actions** for continuous integration and deployment. The CI/CD pipeline is a **critical safety net** that automatically runs on every commit and pull request to ensure code quality, security, and reliability.
+
+### Why CI/CD Integration Matters
+
+**Unit tests and security scans are integrated into the pipeline to**:
+1. **Catch bugs before production** (saves $10,000+ per critical bug)
+2. **Block security vulnerabilities** (prevents CVEs from shipping)
+3. **Enforce code quality** (consistent standards across team)
+4. **Enable confident deployments** (green pipeline = safe to merge)
+5. **Provide audit trail** (compliance and traceability)
+
+**Real Impact**: The pipeline caught a rate-limiting bug and a Tomcat RCE vulnerability (CVE-2025-24813) before they reached production—preventing potential production incidents.
+
+💡 **For complete documentation**, see [CI-CD.md](./CI-CD.md) which includes ROI analysis, real-world examples, and troubleshooting guides.
+
+---
 
 ### Pipeline Location
 

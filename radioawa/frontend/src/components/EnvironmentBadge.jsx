@@ -31,10 +31,13 @@ function EnvironmentBadge() {
     return null
   }
 
-  const isDocker = envInfo.deploymentMode === 'docker'
-  const icon = isDocker ? '🐳' : '💻'
-  const label = isDocker ? 'Docker' : 'Local'
-  const badgeClass = `env-badge ${isDocker ? 'docker' : 'local'}`
+  // Determine environment based on active profile
+  const isProd = envInfo.activeProfile === 'prod' || envInfo.activeProfile === 'production'
+  const isDev = envInfo.activeProfile === 'dev' || envInfo.activeProfile === 'development'
+
+  const icon = isProd ? '🚀' : '🔧'
+  const label = isProd ? 'Prod' : 'Dev'
+  const badgeClass = `env-badge ${isProd ? 'prod' : 'dev'}`
 
   const formatUptime = (seconds) => {
     const hours = Math.floor(seconds / 3600)

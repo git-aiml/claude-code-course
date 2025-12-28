@@ -28,13 +28,25 @@
   transform: translateY(0);
 }
 
-/* Docker badge style */
+/* Production badge style */
+.env-badge.prod {
+  background: linear-gradient(135deg, #2496ed 0%, #1d7fc7 100%);
+  color: white;
+}
+
+/* Development badge style */
+.env-badge.dev {
+  background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+  color: white;
+}
+
+/* Legacy Docker badge style (kept for backward compatibility) */
 .env-badge.docker {
   background: linear-gradient(135deg, #2496ed 0%, #1d7fc7 100%);
   color: white;
 }
 
-/* Local badge style */
+/* Legacy Local badge style (kept for backward compatibility) */
 .env-badge.local {
   background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
   color: white;
