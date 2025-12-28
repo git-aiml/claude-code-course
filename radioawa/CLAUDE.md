@@ -1232,6 +1232,7 @@ VALUES ('TAMIL', 'RadioAwa Tamil', 'https://...', 'https://...', true, 3);
 - **API Testing**: See POSTMAN-GUIDE.md
 - **Testing Guide**: See TESTING-FRAMEWORK.md
 - **Deployment**: See DOCKER-DEPLOYMENT.md
+- **Performance**: See PERFORMANCE-OPTIMIZATION.md (Phase 1 optimizations implemented)
 
 ---
 

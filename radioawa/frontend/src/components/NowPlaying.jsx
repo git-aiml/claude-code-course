@@ -61,13 +61,46 @@ function NowPlaying() {
   useEffect(() => {
     if (!metadataUrl) return
 
+    let intervalId = null
+
     // Initial fetch
     fetchMetadata()
 
-    // Auto-refresh every 10 seconds
-    const interval = setInterval(fetchMetadata, 10000)
+    // Start polling
+    const startPolling = () => {
+      intervalId = setInterval(fetchMetadata, 10000)
+    }
 
-    return () => clearInterval(interval)
+    // Stop polling
+    const stopPolling = () => {
+      if (intervalId) {
+        clearInterval(intervalId)
+        intervalId = null
+      }
+    }
+
+    // Handle visibility change - pause polling when tab is hidden
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        console.log('Tab hidden - pausing metadata polling')
+        stopPolling()
+      } else {
+        console.log('Tab visible - resuming metadata polling')
+        fetchMetadata() // Fetch immediately when tab becomes visible
+        startPolling()
+      }
+    }
+
+    // Start polling initially
+    startPolling()
+
+    // Listen for visibility changes
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      stopPolling()
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
   }, [metadataUrl])
 
   if (loading) {
@@ -142,6 +175,8 @@ function NowPlaying() {
               alt={`${metadata.album || 'Album'} artwork`}
               className="artwork-image"
               crossOrigin="anonymous"
+              loading="lazy"
+              decoding="async"
               onError={handleArtworkError}
             />
           ) : (
