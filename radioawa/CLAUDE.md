@@ -1227,6 +1227,7 @@ VALUES ('TAMIL', 'RadioAwa Tamil', 'https://...', 'https://...', true, 3);
 ## References
 
 - **Human Documentation**: See README.md, TECHNICAL-ARCHITECTURE.md
+- **System Diagrams**: See SYSTEM-ARCHITECTURE-DIAGRAMS.md (Mermaid diagrams for all architecture views)
 - **Quick Start**: See QUICKSTART.md (includes comprehensive Make guide)
 - **Makefile**: Run `make help` to see all available targets
 - **API Testing**: See POSTMAN-GUIDE.md
